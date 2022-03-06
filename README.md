@@ -46,18 +46,41 @@ chmod 400 ~/.jupyter/jupyter_server_config.py
 
 ### Dask
 
-The repository folder [`config`](./config) contains the configuration files that need to be copied in `~/.config/dask/.` (see [README.md](./config/dask/README.md)). 
+The repository folder [`config`](./config) contains the configuration files that need to be copied in `~/.config/dask/.` (see [README.md](./config/dask/README.md)).
+
+If you are on **Spider**, you can copy the file by:
+```shell
+cp -r config/dask/spider/* ~/.config/dask/ 
+```
+
+Or on **Snellius**, do:
+```shell
+cp -r config/dask/snellius/* ~/.config/dask/
+```
+
 
 ## Running 
 
 ### Jupyter
 
-Submit a batch job script based on the provided [template](./scripts/jupyter_dask.bsh) to start the Jupyter server and the Dask scheduler on a compute node (one might want to change the node specifications depending on the requirements of the analysis running on the same node):
+Submit a batch job script based on the provided [template](./scripts/jupyter_dask.bsh) to start the Jupyter server and the Dask scheduler on a compute node (one might want to change the node specifications depending on the requirements of the analysis running on the same node).
+
+If you are on **Spider**, run:
 ```shell
-sbatch scripts/jupyter_dask.bsh
+sbatch scripts/jupyter_dask_spider.bsh
 ```
 
-Copy and paste the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`) in a new terminal window on your local machine (modify the path to the private key used to connect to the supercomputer). You can now access the Jupyter session running on the supercomputer from your browser at `localhost:8889`.
+On **Snellius**, you can run:
+```shell
+sbatch scripts/jupyter_dask_spider.bsh
+```
+
+Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:
+```shell
+ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.surf.nl
+``` 
+
+Paste the command in a new terminal window on your local machine (modify the path to the private key used to connect to the supercomputer). You can now access the Jupyter session running on the supercomputer from your browser at `localhost:8889`.
 
 ### Dask 
 
