@@ -1,0 +1,12 @@
+labextension:
+  factory:
+    module: 'dask_jobqueue'
+    class: 'SLURMCluster'
+    args: []
+    kwargs: {}
+  default:
+    workers: null
+    adapt:
+      null
+  initial:
+    - name: 'SLURMCluster'
