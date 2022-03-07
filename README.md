@@ -72,7 +72,7 @@ sbatch scripts/jupyter_dask_spider.bsh
 
 On **Snellius**, you can run:
 ```shell
-sbatch scripts/jupyter_dask_spider.bsh
+sbatch scripts/jupyter_dask_snellius.bsh
 ```
 
 Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:

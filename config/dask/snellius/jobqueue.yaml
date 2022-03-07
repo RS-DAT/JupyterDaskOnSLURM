@@ -3,7 +3,7 @@ jobqueue:
     name: dask-worker
 
     # Dask worker options
-    cores: 4                  # Total number of cores per job
+    cores: 32                 # Total number of cores per job
     memory: '30GiB'           # Total amount of memory per job
     processes: 1              # Number of Python processes per job
 
