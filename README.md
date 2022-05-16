@@ -102,7 +102,7 @@ A Dask cluster (with no worker) is started together with the JupyterLab session 
 
 ## Examples
 
-* See [this repository](https://github.com/RS-DAT/JupyterDask-Examples) for some examples using the described deployment! 
+See [this repository](https://github.com/RS-DAT/JupyterDask-Examples) for some examples that make use of this deployment. 
 
 ## Resources
 
