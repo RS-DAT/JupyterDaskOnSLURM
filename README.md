@@ -58,6 +58,20 @@ Or on **Snellius**, do:
 cp -r config/dask/snellius/* ~/.config/dask/
 ```
 
+### dCache
+
+In order to configure access to [the SURF dCache storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html) using [the Filesystem Spec library](https://filesystem-spec.readthedocs.io/en/latest/) and [dCacheFS](https://github.com/NLeSC-GO-common-infrastructure/dcachefs), you can add the following JSON file to `~/.config/fsspec/.` (replace `<MACAROON>` with the actual [token for authentication](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons)):
+```json
+{
+    "dcache": {
+        "api_url": "https://dcacheview.grid.surfsara.nl:22880/api/v1",
+        "webdav_url": "https://webdav.grid.surfsara.nl:2880",
+        "token": "<MACAROON>",
+        "block_size": 0
+    }
+}
+```
+URL-paths starting with the `dcache://...` protocol will then be open via dCacheFS by Filesystem Spec. 
 
 ## Running 
 
