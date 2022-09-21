@@ -9,8 +9,9 @@ source ~/.bashrc
 conda activate jupyter_dask
 
 node=`hostname -s`
+port=`shuf -i 8400-9400 -n 1`
 
 echo "Run the following on your local machine: "
-echo "ssh -i /path/to/private/ssh/key -N -L 8889:${node}:8888 ${USER}@snellius.surf.nl"
+echo "ssh -i /path/to/private/ssh/key -N -L 8889:${node}:${port} ${USER}@snellius.surf.nl"
 
-jupyter lab --no-browser --port=8888 --ip=${node}
+jupyter lab --no-browser --port=${port} --ip=${node}
