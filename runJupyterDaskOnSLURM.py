@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
+import configparser
+import time
 import os
 from fabric import Connection
 import webbrowser
@@ -12,7 +14,7 @@ remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'
 def parse_cla():
     parser = argparse.ArgumentParser()
     parser.add_argument("--local_port", "-lp", help="specify non-default local port for port forwarding", type=str)
-    group = parser.ad_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
     group.add_argument("--platform", "-p", help="Make use of configuration for known platform as saved in platforms.ini.", type=str)
@@ -21,7 +23,7 @@ def parse_cla():
 
 def get_verified_input(prompt):
     unverified = True
-    while unverifed:
+    while unverified:
         userinput = input(prompt+'\n')
         print(userinput+'\n')
         verification = input('is this correct? [Y]/n]'+'\n') or 'Y'
@@ -97,7 +99,7 @@ def forward_ports(portsnodes, config_inputs):
 
 def launchJupyterLabLocal(localport):
     local_address = f"http://localhost:{localport}"
-    webbrowser.open(local_address, new=0,autoraise=true)
+    webbrowser.open(local_address, new=0, autoraise=True)
 
 
 def main():
@@ -109,6 +111,10 @@ def main():
     conn = establish_connection(config_inputs)
     #submit batch job with scheduler
     outfilename = submit_scheduler(conn,args,platform_name)
+    #Pause 20 seconds to allow slurm scheduler to spin up output file
+    print("Pausing 20 seconds for slurm scheduler")
+    time.sleep(20)
+    print("resuming execution")
     #parse response to get node information
     portsnodes, localport, node, remoteport = retrieve_node_info(conn, outfilename)
     #set up port forwarding from remote to local
