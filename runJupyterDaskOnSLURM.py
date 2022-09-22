@@ -91,7 +91,7 @@ def retrieve_node_info(conn,outfilename):
     return portsnodes, lp, node, remoteport
 
 def forward_ports(portsnodes, config_inputs):
-    cmd = f'ssh -i {config_inputs['keypath']} -N -L {portsnodes} &'
+    cmd = f"ssh -i {config_inputs['keypath']} -N -L {portsnodes} & "
     os.system(cmd)
 
 
