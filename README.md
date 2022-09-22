@@ -25,7 +25,7 @@ mamba env create -f environment.yaml
 
 Activate the environment and install additional dependencies using `mamba`/`pip`, as required by each use case:
 ```shell
-conda activate dask_jupyter
+conda activate jupyter_dask
 conda install ...
 pip install ...
 ```
