@@ -64,6 +64,7 @@ def parse_cla():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--local_port", "-lp", help="specify non-default local port for port forwarding", type=str)
+    parser.add_argument("--wait_time", "-wt", help="time in integer seconds to wait for SLURM to schedule jupyter server job", type=int)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
@@ -184,6 +185,40 @@ def submit_scheduler(conn, args, platform):
     outfilename = 'slurm-'+jobnumber+'.out'
     return outfilename
 
+def check_for_SLURM(conn,outfilename,args):
+    """
+    check whether SLURM output file is present indicating SLURM has scheduled jupyter server job
+
+
+    """
+
+    if args.wait_time is not None:
+        attempts = int(ceil(args.wait_time)/2)
+    else:
+        attempts = 10
+
+    cmd = f"cd {remoteWD} && [ ! -f {outfilename} ] && echo 'waiting' || echo 'found' "
+    i=0
+    file_present = False
+    print(f"Waiting for SLURM output: {outfilename} ...")
+    while i < attempts:
+        res = conn.run(cmd)
+        if 'found' in res.stdout :
+            print(f"SLURM outputfile {outfilename} present. Retrieving node information")
+            file_present = True
+            break
+        else:
+            if i <= (attempts-2):
+                i+= 1
+                time.sleep(2)
+            else:
+                i+= 1
+                print(f"SLURM outputfile {outfilename} was not found after {args.wait_time} seconds. Aborting")
+    return file_present 
+
+
+ 
+
 def retrieve_node_info(conn,outfilename):
     """
     Parse and retrieve information on node where server is running on remote platform and whicch ports are being used
@@ -226,9 +261,9 @@ def launchJupyterLabLocal(localport):
 
 
 def main():
-	"""
-	run thrrough steps to lauch JupyterDaskOnSLURM instance on remote platform
-	"""
+    """
+    run thrrough steps to lauch JupyterDaskOnSLURM instance on remote platform
+    """
 	 
     #parse commandd line arguments
     args = parse_cla()
@@ -238,16 +273,18 @@ def main():
     conn = establish_connection(config_inputs)
     #submit batch job with scheduler
     outfilename = submit_scheduler(conn,args,platform_name)
-    #Pause 20 seconds to allow slurm scheduler to spin up output file
-    print("Pausing 20 seconds for slurm scheduler")
-    time.sleep(20)
-    print("resuming execution")
-    #parse response to get node information
-    portsnodes, localport, node, remoteport = retrieve_node_info(conn, outfilename)
-    #set up port forwarding from remote to local
-    forward_ports(portsnodes, config_inputs)
-    #lauch local browser cconnected to remote Jupyter Lab instance
-    launchJupyterLabLocal(localport)
+    file_present = check_for_SLURM(conn,outfilename,args)
+
+    if file_present:
+        #parse response to get node information
+        portsnodes, localport, node, remoteport = retrieve_node_info(conn, outfilename)
+        #set up port forwarding from remote to local
+        forward_ports(portsnodes, config_inputs)
+        #lauch local browser cconnected to remote Jupyter Lab instance
+        launchJupyterLabLocal(localport)
+    else:
+        print("SLURM failed to schedule job for submission with specified time\n")
+        print("Try increasing the wait time or check the submission on remote host")
 
 
 if __name__ == '__main__':
