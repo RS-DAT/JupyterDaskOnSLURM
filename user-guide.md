@@ -70,7 +70,7 @@ More information on how to read files from the dCache storage are provided in th
 
 ## Running 
 
-This repository includes [a Python script](./runJupyterDaskOnSLURM.py) to start Jupyter and Dask services on a SURF system that has been configured following the steps above. 
+This repository includes [a Python script](./scripts/runJupyterDaskOnSLURM.py) to start Jupyter and Dask services on a SURF system that has been configured following the steps above. 
 
 Download the script on your local machine by cloning this repository:
 ```shell
@@ -85,35 +85,39 @@ pip install fabric
 
 Running the script the first time using the option `--add_platform` queries the user for authentication credentials (username and path to the private ssh-key), storing these in a configuration file for later use:
 ```shell
-python runJupyterDaskOnSLURM.py --add_platform
+python scripts/runJupyterDaskOnSLURM.py --add_platform
 ```
 
 The script can later be run as:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME>
+python scripts/runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME>
 ```
 
-### Jupyter
+A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab interface (login using the password set as above). 
 
-Submit a batch job script based on the provided template to start the Jupyter server and the Dask scheduler on a compute node (one might want to change the node specifications depending on the requirements of the analysis running on the same node). Also, change the wall time limit according the needs (the Jupyter server will be killed when the limit is reached). 
+A Dask cluster (with no worker) is started together with the JupyterLab session and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers. 
 
-If you are on **Spider**, run:
+## Shutting down
+
+From the Dask tab in the Jupyter interface, click "shutdown" on a running cluster instance to kill all workers and the scheduler (a new cluster based on the default configurations can be re-created by pressing the "+" button). 
+
+From the Jupyter interface, select "File > Shutdown" to stop the Jupyter server and release resources.
+
+If the job running the Jupyter server and the Dask scheduler is killed, the Dask workers will also be killed shortly after (configure this using the `death-timeout` key in the config file).
+
+## Throubleshooting
+
+### Manual deployment
+
+As an alternative to the deployment script, the Jupyter and Dask services can  be started via the the following "manual" procedure.
+
+Login to the SLURM system, then submit a batch job script based on the template provided in `scripts/jupyter_dask.bsh` to start the Jupyter server and the Dask scheduler on a compute node: 
 ```shell
-sbatch scripts/jupyter_dask_spider.bsh
-```
-
-On **Snellius**, you can run:
-```shell
-sbatch scripts/jupyter_dask_snellius.bsh
-```
+sbatch scripts/jupyter_dask.bsh
 
 Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:
 ```shell
 ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.surf.nl
 ``` 
 
-Paste the command in a new terminal window on your local machine (modify the path to the private key used to connect to the supercomputer). You can now access the Jupyter session running on the supercomputer from your browser at `localhost:8889`. Select "File > Shutdown" to kill the server and release resources. 
-
-### Dask 
-
-A Dask cluster (with no worker) is started together with the JupyterLab session (it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen). Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers. Press "shutdown" to kill all workers and the scheduler. If the job running the Jupyter server and the Dask scheduler is killed, the Dask workers will also be killed shortly (configure this using the `death-timeout` key in the config file).  A new cluster based on the default configurations can be created by pressing the "+" button. A cluster with different specifications can be created in a Python notebook/console by instantiating a `SLURMCluster()` object with the desired custom features.  
+Paste the command in a new terminal window **on your local machine** (modify the path to the private key). You can now access the Jupyter session from your browser at `localhost:8889`.
