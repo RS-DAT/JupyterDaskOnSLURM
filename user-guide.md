@@ -58,7 +58,7 @@ mkdir -p ~/.config/dask
 cp -r config/dask/config.yaml ~/.config/dask/. 
 ```
 
-[This README file](./config/dask/README.md) provides more information on the Dask default settings, which can be further tuned depending on user needs.
+The default Dask settings can be further tuned depending on user needs.
 
 ### dCache
 
