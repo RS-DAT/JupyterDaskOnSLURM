@@ -48,6 +48,8 @@ and make the Jupyter config file that is created after running the previous step
 chmod 400 ~/.jupyter/jupyter_server_config.py 
 ```
 
+Edit the template job script `scripts/jupyter_dask.bsh`, **uncommenting the block corresponding to the desired SURF system**. The job configuration details can be further customized depending on the specific requirements for the node running the Jupyter server.  
+
 ### Dask
 
 The repository `config/dask` directory contains a template Dask configuration file. This file defines the default worker settings in the Dask cluster, and it thus **needs to be edited depending on the SURF system** which we are running on. In particular, **uncomment the correct block in  `config/dask/config.yaml`**, then copy the file to `${HOME}/.config/dask`:
@@ -111,7 +113,7 @@ If the job running the Jupyter server and the Dask scheduler is killed, the Dask
 
 As an alternative to the deployment script, the Jupyter and Dask services can  be started via the the following "manual" procedure.
 
-Login to the SLURM system, then submit a batch job script based on the template provided in `scripts/jupyter_dask.bsh` to start the Jupyter server and the Dask scheduler on a compute node: 
+Login to the SURF system, then submit a batch job script based on the template provided in `scripts/jupyter_dask.bsh` to start the Jupyter server and the Dask scheduler on a compute node: 
 ```shell
 sbatch scripts/jupyter_dask.bsh
 ```
