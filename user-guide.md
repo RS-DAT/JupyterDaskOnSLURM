@@ -1,8 +1,8 @@
 # User guide
 
-The following steps will help you to run a Jupyter server and a Dask cluster on one of the SURF systems running SLURM, such as Spider, Snellius or Lisa (please find information on how to get accesss to SURF infrastructure [here]()).
+The following steps will help you to run a Jupyter server and a Dask cluster on one of the SURF systems running SLURM, such as Spider, Snellius or Lisa (please find information on how to get accesss to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services)).
 
-This guide assumes that you have received credentials from SURF, that you are able to access the system via SSH, and that a SSH key pair has been setup for password-less login (see the dedicated SURF guides for [Lisa/Snellius]() and [Spider]()). 
+This guide assumes that you have received credentials from SURF, that you are able to access the system via SSH, and that a SSH key pair has been setup for password-less login (see the dedicated SURF guides for [Lisa/Snellius](https://servicedesk.surf.nl/wiki/display/WIKI/SSH#SSH-Bonus2:public-keyauthentication) and [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html)). 
 
 ## Installation 
 
@@ -114,6 +114,7 @@ As an alternative to the deployment script, the Jupyter and Dask services can  b
 Login to the SLURM system, then submit a batch job script based on the template provided in `scripts/jupyter_dask.bsh` to start the Jupyter server and the Dask scheduler on a compute node: 
 ```shell
 sbatch scripts/jupyter_dask.bsh
+```
 
 Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:
 ```shell
