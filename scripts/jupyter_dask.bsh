@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=24:00:00
+# uncomment for Spider
+#SBATCH --cpus-per-task=4
+#SBATCH --partition=normal
+## uncomment for Snellius
+##SBATCH --cpus-per-task=32
+##SBATCH --partition=thin
+## uncomment for Lisa
+##SBATCH --cpus-per-task=4
+##SBATCH --partition=shared
+
+source ~/.bashrc
+conda activate jupyter_dask
+
+node=`hostname -s`
+port=`shuf -i 8400-9400 -n 1`
+platform=`hostname -d | awk -F. '{print $(NF-2)}'`
+
+echo "Run the following on your local machine: "
+echo "ssh -i /path/to/private/ssh/key -N -L 8889:${node}:${port} ${USER}@${platform}.surf.nl"
+
+jupyter lab --no-browser --port=${port} --ip=${node}
