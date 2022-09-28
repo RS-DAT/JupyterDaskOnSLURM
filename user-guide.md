@@ -2,7 +2,7 @@
 
 The following steps will help you to run a Jupyter server and a Dask cluster on one of the SURF systems running SLURM, such as Spider, Snellius or Lisa (please find information on how to get accesss to SURF infrastructure [here]()).
 
-This guide assumes that you have received credentials from SURF, and that you are able to access the system via SSH (see the dedicated SURF guides for [Lisa/Snellius]() and [Spider]()). 
+This guide assumes that you have received credentials from SURF, that you are able to access the system via SSH, and that a SSH key pair has been setup for password-less login (see the dedicated SURF guides for [Lisa/Snellius]() and [Spider]()). 
 
 ## Installation 
 
@@ -69,6 +69,29 @@ cp -r config/fsspec/config.json ~/.config/fsspec/.
 More information on how to read files from the dCache storage are provided in the [documentation of the dCacheFS package](https://dcachefs.readthedocs.io/en/latest/).
 
 ## Running 
+
+This repository includes [a Python script](./runJupyterDaskOnSLURM.py) to start Jupyter and Dask services on a SURF system that has been configured following the steps above. 
+
+Download the script on your local machine by cloning this repository:
+```shell
+git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git 
+cd JupyterDaskOnSLURM
+```
+
+The script requires Python 3 and the [Fabric library](https://www.fabfile.org), which can be installed via `pip`:
+```shell
+pip install fabric
+```
+
+Running the script the first time using the option `--add_platform` queries the user for authentication credentials (username and path to the private ssh-key), storing these in a configuration file for later use:
+```shell
+python runJupyterDaskOnSLURM.py --add_platform
+```
+
+The script can later be run as:
+```shell
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME>
+```
 
 ### Jupyter
 
