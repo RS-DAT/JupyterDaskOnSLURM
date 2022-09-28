@@ -104,9 +104,7 @@ def get_verified_input(prompt):
     unverified = True
     while unverified:
         userinput = input(prompt+'\n')
-        print(userinput+'\n')
-        verification = input('is this correct? [Y]/n]'+'\n') or 'Y'
-        print(verification+'\n')
+        verification = input(f'Got "{userinput}" - is this correct? [Y]/n]') or 'Y'
         if verification == 'Y':
             unverified = False
     return userinput
