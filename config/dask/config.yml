@@ -1,0 +1,30 @@
+distributed:
+  dashboard:
+    link: "/proxy/8787/status"
+labextension:
+  factory:
+    module: 'dask_jobqueue'
+    class: 'SLURMCluster'
+    args: []
+    kwargs: {}
+  default:
+    workers: null
+    adapt:
+      null
+  initial:
+    - name: 'SLURMCluster'
+jobqueue:
+  slurm:
+    name: dask-worker
+    # uncomment for Spider
+    cores: 4                    # Total number of cores per job
+    memory: '30GiB'             # Total amount of memory per job
+    queue: 'normal'
+#    # uncomment for Snellius
+#    cores: 32                   # Total number of cores per job
+#    memory: '50GiB'             # Total amount of memory per job
+#    queue: 'thin'
+    processes: 1                # Number of Python processes per job
+    death-timeout: 600          # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: '$TMPDIR'  # Location of fast local storage like /scratch or $TMPDIR
+    walltime: '10:00:00'
