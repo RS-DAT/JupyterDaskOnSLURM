@@ -265,7 +265,7 @@ def check_for_SLURM(conn,outfilename,args):
     return file_present 
 
 def check_for_node_info(conn, outfilename):
-    cmd = f"cd {remoteWD} && cat {outfilename} | grep '/path/to/private/ssh/key' - "
+    cmd = f"cd {remoteWD} && cat {outfilename} | grep '/path/to/private/ssh/key' -  || echo 'node info not present'"
     info_present = False
     empty = True
     count = 0
@@ -346,7 +346,7 @@ def forward_port_and_launch_local(conn,forwardconfig):
 
 def main():
     """
-    run thrrough steps to lauch JupyterDaskOnSLURM instance on remote platform
+    run through steps to lauch JupyterDaskOnSLURM instance on remote platform
     """
 	 
     # parse command line arguments
