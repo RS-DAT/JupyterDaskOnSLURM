@@ -179,17 +179,6 @@ def get_config(args):
         return load_platform_config(args.platform)
 
 
-def establish_connection(config_inputs):
-    """
-    Establish ssh connection oject to remote host based on configuration.
-
-    :param config_inputs: configuration input parameters
-    :return conn: ssh connection object
-    """
-    conn = Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath']})
-    return conn
-
-
 def ssh_remote_executor(config_inputs, func, *inargs):
     """
     Create ssh connection to remote host and execute logic of function (func) using this connection.
