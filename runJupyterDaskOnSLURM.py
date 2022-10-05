@@ -213,6 +213,15 @@ def submit_scheduler(conn, args, platform):
 
 
 def check_and_retrieve_SLURM_info(conn,outfilename,args):
+    """
+    check whether SLURM hs scheduled the job and retrieve information on remote host node to use for
+    port forwarding
+    Wrapper which calls check_for_SLURM(), check_for_node_info(), and retrieve_node_info()
+
+    :param conn: ssh connection object
+    :param outfilename: name of file to check for
+    :param args: ArgumentParser return object containing command line arguments.
+    """
 
     forwardconfig = None
     file_present = check_for_SLURM(conn, outfilename, args)
