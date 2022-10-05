@@ -212,6 +212,24 @@ def submit_scheduler(conn, args, platform):
     return outfilename
 
 
+def check_and_retrieve_SLURM_info(conn,outfilename,args):
+
+    forwardconfig = None
+    file_present = check_for_SLURM(conn, outfilename, args)
+    if file_present:
+        info_present = check_for_node_info(conn, outfilename)
+        if info_present:
+            forwardconfig = retrieve_node_info(conn,outfilename)
+        else:
+            print("no node information available in SLURM output file 10 seconds after initialization.")
+            print("Please check submission on remote host.")
+    else:
+        print("SLURM failed to schedule job for submission with specified time\n")
+        print("Try increasing the wait time or check the submission on remote host")
+    return forwardconfig
+
+
+
 def check_for_SLURM(conn,outfilename,args):
     """
     check whether SLURM output file is present indicating SLURM has scheduled jupyter server job
@@ -246,6 +264,24 @@ def check_for_SLURM(conn,outfilename,args):
                 print(f"SLURM outputfile {outfilename} was not found after {args.wait_time} seconds. Aborting")
     return file_present 
 
+def check_for_node_info(conn, outfilename):
+    cmd = f"cd {remoteWD} && cat {outfilename} | grep '/path/to/private/ssh/key' - "
+    info_present = False
+    empty = True
+    count = 0
+    while empty:
+        if count <= 10:
+            result = conn.run(cmd)
+            if '/path/to/private/ssh/key' in result.stdout:
+                empty = False
+                info_present = True
+            else:
+                time.sleep(1)
+                count+=1
+        else:
+            print("timing out on waiting for SLURM outputfile content")
+            empty = False
+    return info_present
 
 def retrieve_node_info(conn,outfilename):
     """
@@ -319,16 +355,11 @@ def main():
     config_inputs, platform_name = get_config(args)
     # submit batch job with scheduler
     outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-    # check wether SLURM has scheduled and started server job
-    file_present = ssh_remote_executor(config_inputs, check_for_SLURM, outfilename, args)
-    if file_present:
-        # retrieve information on sever node and ports
-        forwardconfig = ssh_remote_executor(config_inputs, retrieve_node_info, outfilename)
-        # forward port from remote to local and auch webrowser on forwarded port
-        _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+    forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+    if forwardconfig is None:
+        print('submission appears to have failed.')
     else:
-        print("SLURM failed to schedule job for submission with specified time\n")
-        print("Try increasing the wait time or check the submission on remote host")
+        _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
 
 
