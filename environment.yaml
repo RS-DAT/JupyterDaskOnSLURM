@@ -6,6 +6,8 @@ dependencies:
   - dask-jobqueue
   - jupyterlab>=3
   - dask-labextension
+  - jupyterlab-git
   - pip
   - pip:
     - dcachefs
+    - fabric
