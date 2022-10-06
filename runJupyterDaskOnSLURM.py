@@ -2,7 +2,7 @@
 
 """
 This script provides convenience functions to launch a jupyter dask on SLURM session from a local machine
-with ssh access to the remote supercomputer administerd by SLURM. This assumes the installation and configuration of
+with ssh access to the remote supercomputer administered by SLURM. This assumes the installation and configuration of
 JupyterDaskOnSLURM has been completed on the remote host.
 
 USE:
@@ -17,25 +17,24 @@ When invoking the script one of the following command line arguments MUST be pro
 
 Optionally the user can pass the local port to be used in the Jupyter instance from the remote host. This can be done using
 
---local_port (-lp)  : The script will set up portforwarding to the specified port of the localhost. 
+--local_port (-lp)  : The script will set up port forwarding to the specified port of the localhost.
                       If not specified port 8889 is used
 
-Finally the user can specify the amount of time for which to wait for SLRM to schedule the Jupyter instance using
+Finally, the user can specify the amount of time for which to wait for SLRM to schedule the Jupyter instance using
 
 --wait_time (-wt)   : The script will wait for SLURM to successfully schedule the jupyter server instance on
-                              the remote host for the specified number of seconds (integer) checking every 2 seconds
+                      the remote host for the specified number of seconds (integer) checking every 2 seconds
 
-Paths to the working directoryy and scripts on the remote host, as well as to the local connection configuration file can be specified below.
+Paths to the working directory and scripts on the remote host, as well as to the local connection configuration file can be specified below.
 Configurable paths are:
 
-config_path     : path to config file that is created/updated. default is in local instalation of JupyterDaskOnSLURM
-                 repository. Can be adapted to user preferences
+config_path     : path to config file that is created/updated. default is in local installation of JupyterDaskOnSLURM
+                  repository. Can be adapted to user preferences
 remoteWD        : Working directory from which to submit batch job on remote host
 remoteScriptWD  : Path to directory on remote host where job submission scripts are located
                   ATTENTION! When adding a job script on a plattform other than spider/snellius @SURF the user MUST
-                  create a jobscript for the platform (this can be done by using the exisiting scripts as templates).
-                  Expected naming convention is 'jupyter_dask_xxx.bsh', where xxx is the name of the platform. 
-
+                  create a job script for the platform (this can be done by using the existing scripts as templates).
+                  Expected naming convention is 'jupyter_dask_xxx.bsh', where xxx is the name of the platform.
 """ 
 
 
@@ -46,16 +45,7 @@ import time
 import webbrowser
 from fabric import Connection
 
-"""
-Specify paths
-config_path     : path to config file that is created/updated. default is in local instalation of JupyterDaskOnSLURM
-                 repository. Can be adapted to user preferences
-remoteWD        : Working directory from which to submit batch job on remote host
-remoteScriptWD  : Path to directory on remote host where job submission scripts are located
-                  ATTENTION! When adding a job script on a plattform other than spider/snellius @SURF the user MUST
-                  create a jobscript for the platform (this can be done by using the exisiting scripts as templates).
-                  Expected naming convention is 'jupyter_dask_xxx.bsh', where xxx is the name of the platform.  
-"""
+
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
 remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'
@@ -63,10 +53,10 @@ remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'
 
 def parse_cla():
     """
-    command line argument parser
+    Command line argument parser
 
-    accepted arguments:
-        mutualy exclusive, one required:
+    Accepted arguments:
+        mutually exclusive, one required:
         --add_platform (-a) : The script will query the user for login and connection information for the platform.
                               This information is then saved in ./config/platforms/platforms.ini for future use
         --one_off (-oo)     : As for add platform, except that the information entered is NOT saved
@@ -74,21 +64,21 @@ def parse_cla():
                               by the string passed and will use this, if successful.
 
         optional:
-        --local_port (-lp)  : The script will set up portforwarding to the specified port of the localhost. 
+        --local_port (-lp)  : The script will set up port forwarding to the specified port of the localhost.
                               If not specified port 8889 is used
         --wait_time (-wt)   : The script will wait for SLURM to successfully schedule the jupyter server instance on
                               the remote host for the specified number of seconds (integer) checking every 2 seconds   
 
-    :return args: ArgumentParser return object containing command line arguments  
-
+    :return args: ArgumentParser return object containing command line arguments
     """
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--local_port", "-lp", help="specify non-default local port for port forwarding", type=str)
     parser.add_argument("--wait_time", "-wt", help="time in integer seconds to wait for SLURM to schedule jupyter server job", type=int)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
-    group.add_argument("--platform", "-p", help="Make use of configuration for known platform as saved in platforms.ini.", type=str)
+    group.add_argument("--platform", "-p", help="make use of configuration for known platform as saved in platforms.ini.", type=str)
     args = parser.parse_args()
     return args 
 
@@ -101,6 +91,7 @@ def get_verified_input(prompt):
     :param prompt: str; prompt to display to user requesting input
     :return userinput: str; user supplied input  
     """
+
     unverified = True
     while unverified:
         userinput = input(prompt+'\n')
@@ -117,17 +108,17 @@ def add_platform(oneoff=False):
     Queries:
         platform name
         host alias, e.g. USER@spider.surf.nl, where spider.surf.nl is the host alias
-        user name for platform
+        username for platform
         absolute (local) path to SSH key granting access to platform
 
     :param oneoff: default False; if true DO NOT save input to config file, but only use for this deployment
     :return config_inputs: dictionary with fields {host: user: keypath:}
-    :return platform_name: name specifying platform (is used in selecting job scripts) 
-    
+    :return platform_name: name specifying platform (is used in selecting job scripts)
     """
+
     platform_name = get_verified_input('Please enter platform name:')
     platform_host = get_verified_input('Please enter host (alias), e.g. USER@spider.surf.nl, where spider.surf.nl is the host alias:')
-    user_name = get_verified_input('Please enter user name for platform: ')
+    user_name = get_verified_input('Please enter username for platform: ')
     key_path = get_verified_input('Please enter absolute (local) path to SSH key granting access to platform:')
     config_inputs = {'host':platform_host, 'user':user_name, 'keypath':key_path} 
 
@@ -143,12 +134,13 @@ def add_platform(oneoff=False):
 
 def load_platform_config(platform):
     """
-    Load platfrom configuration from config file
+    Load platform configuration from config file
 
-    :param platform: str specifiying platform. Corresponds to section in the platforms.ini file
+    :param platform: str specifying platform. Corresponds to section in the platforms.ini file
     :return config_inputs: dictionary with fields {host: user: keypath:}
     :return platform: echo platform input argument
     """
+
     config = configparser.ConfigParser()
     config.read(config_path)
     if platform not in config.sections():
@@ -171,10 +163,11 @@ def get_config(args):
     :return config_inputs: dictionary with fields {host: user: keypath:}
     :return platform: (echo) platform name
     """
+
     if args.add_platform:
-	    return add_platform()
+        return add_platform()
     elif args.one_off:
-	    return add_platform(oneoff=True)
+        return add_platform(oneoff=True)
     else:
         return load_platform_config(args.platform)
 
@@ -187,6 +180,7 @@ def ssh_remote_executor(config_inputs, func, *inargs):
     :param func: function object to execute. Accepts only positional arguments
     :param *inargs: positional arguments to be passed to func 
     """
+
     with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath']}) as conn:
         result = func(conn, *inargs)
         return result
@@ -194,12 +188,14 @@ def ssh_remote_executor(config_inputs, func, *inargs):
 
 def submit_scheduler(conn, args, platform):
     """
-    submit batch job with jupyter server on remote host
+    Submit batch job with jupyter server on remote host
 
     :param conn: ssh connection object
     :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
     :return outfilename: name of slurm output file on remote host
     """
+
     jscript = 'jupyter_dask_'+platform+'.bsh'
     if args.local_port is not None:
         lport = args.local_port
@@ -214,7 +210,7 @@ def submit_scheduler(conn, args, platform):
 
 def check_and_retrieve_SLURM_info(conn,outfilename,args):
     """
-    check whether SLURM hs scheduled the job and retrieve information on remote host node to use for
+    Check whether SLURM hs scheduled the job and retrieve information on remote host node to use for
     port forwarding
     Wrapper which calls check_for_SLURM(), check_for_node_info(), and retrieve_node_info()
 
@@ -243,14 +239,13 @@ def check_and_retrieve_SLURM_info(conn,outfilename,args):
     return forwardconfig
 
 
-
 def check_for_SLURM(conn,outfilename,args):
     """
-    check whether SLURM output file is present indicating SLURM has scheduled jupyter server job
+    Check whether SLURM output file is present indicating SLURM has scheduled jupyter server job
 
     :param conn: ssh connection object
     :param outfilename: name of file to check for
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of time to
+    :param args: ArgumentParser return object containing command line arguments. Included for optional specification of time to
                  wait for successful scheduling (ddefault 20s) 
     """
 
@@ -278,6 +273,7 @@ def check_for_SLURM(conn,outfilename,args):
                 print(f"SLURM outputfile {outfilename} was not found after {args.wait_time} seconds. Aborting")
     return file_present 
 
+
 def check_for_node_info(conn, outfilename):
     cmd = f"cd {remoteWD} && cat {outfilename} | grep '/path/to/private/ssh/key' -  || echo 'node info not present'"
     info_present = False
@@ -299,7 +295,7 @@ def check_for_node_info(conn, outfilename):
 
 def retrieve_node_info(conn,outfilename):
     """
-    Parse and retrieve information on node where server is running on remote platform and whicch ports are being used
+    Parse and retrieve information on node where server is running on remote platform and which ports are being used
     for port forwarding to local host
 
     :param conn: ssh connection object
@@ -309,6 +305,7 @@ def retrieve_node_info(conn,outfilename):
     :return node: node identifier of remote platform
     :return remoteport: number of remote port where jupyter server is exposed
     """
+
     cmd = f"cd {remoteWD} && cat {outfilename} | grep '/path/to/private/ssh/key' - | cut -d ' ' -f 6- - "
     result = conn.run(cmd)
     portsnodes = result.stdout.rstrip()
@@ -343,6 +340,7 @@ def launchJupyterLabLocal(localport):
 
     :param localport: port on localhost 
     """
+
     local_address = "http://localhost:"+str(localport)
     print(local_address)
     controller = webbrowser.get()
@@ -352,13 +350,14 @@ def launchJupyterLabLocal(localport):
 
 def forward_port_and_launch_local(conn,forwardconfig):
     """
-    Forward server port of remote host to local port. Then launch default webbrowser on forwarded port
+    Forward server port of remote host to local port. Then launch default webbrowser on forwarded port.
     Port forwarding is executed in a context manager which waits for user input to terminate after launching
     the web browser.
 
     :param conn: ssh connection object
     :param forwardconfig: dictionary with information of remote host node and ports 
     """
+
     remotehost=forwardconfig["node"]
     remoteport=int(forwardconfig["remoteport"])
     localport=int(forwardconfig["localport"])
@@ -379,9 +378,9 @@ def forward_port_and_launch_local(conn,forwardconfig):
 
 def main():
     """
-    run through steps to lauch JupyterDaskOnSLURM instance on remote platform
+    Run through steps to launch JupyterDaskOnSLURM instance on remote platform
     """
-	 
+
     # parse command line arguments
     args = parse_cla()
     # retrieve or set config
@@ -395,21 +394,5 @@ def main():
         _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
 
-
-
 if __name__ == '__main__':
     main()
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
