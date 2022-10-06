@@ -228,12 +228,17 @@ def check_and_retrieve_SLURM_info(conn,outfilename,args):
     if file_present:
         info_present = check_for_node_info(conn, outfilename)
         if info_present:
-            forwardconfig = retrieve_node_info(conn,outfilename)
+            server_running = check_for_server(conn, outfilename)
+            if server_running:
+                forwardconfig = retrieve_node_info(conn,outfilename)
+            else:
+                print("jupyter server has not spun up succesfully 10 seconds after node allocation.")
+                print("Please check submission on remote host.")
         else:
             print("no node information available in SLURM output file 10 seconds after initialization.")
             print("Please check submission on remote host.")
     else:
-        print("SLURM failed to schedule job for submission with specified time\n")
+        print("SLURM failed to schedule job for submission within specified time\n")
         print("Try increasing the wait time or check the submission on remote host")
     return forwardconfig
 
@@ -312,6 +317,25 @@ def retrieve_node_info(conn,outfilename):
     remoteport = portsnodes.split(' ')[0].split(':')[2] 
     return {"fwd_string":portsnodes, "localport":lp, "node":node, "remoteport":remoteport}
 
+
+def check_for_server(conn, outfilename):
+    cmd = f"cd {remoteWD} && cat {outfilename} | grep 'is running at' - || echo 'server not yet available' "
+    server_running = False
+    empty = True 
+    count = 0
+    while empty:
+        if count <= 10:
+            result = conn.run(cmd)
+            if 'is running at' in result.stdout:
+                empty = False
+                server_running = True
+            else:
+                time.sleep(1)
+                count+=1
+        else:
+            print("timing out on waiting for Jupyter server to spin up")
+            empty = False
+    return server_running
 
 def launchJupyterLabLocal(localport):
     """
