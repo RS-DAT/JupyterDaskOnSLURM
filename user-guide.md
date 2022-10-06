@@ -1,8 +1,8 @@
 # User guide
 
-The following steps will help you to run a Jupyter server and a Dask cluster on one of the SURF systems running SLURM, such as Spider, Snellius or Lisa (please find information on how to get accesss to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services)).
+The following steps will help you to run a Jupyter server and a Dask cluster on one of the SURF systems running SLURM, such as Spider, Snellius or Lisa (please find information on how to get access to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services)).
 
-This guide assumes that you have received credentials from SURF, that you are able to access the system via SSH, and that a SSH key pair has been setup for password-less login (see the dedicated SURF guides for [Lisa/Snellius](https://servicedesk.surf.nl/wiki/display/WIKI/SSH#SSH-Bonus2:public-keyauthentication) and [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html)). 
+This guide assumes that you have received credentials from SURF, that you are able to access the system via SSH, and that an SSH key pair has been set up for password-less login (see the dedicated SURF guides for [Lisa/Snellius](https://servicedesk.surf.nl/wiki/display/WIKI/SSH#SSH-Bonus2:public-keyauthentication) and [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html)). 
 
 ## Installation 
 
@@ -12,7 +12,7 @@ git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
 cd JupyterDaskOnSLURM
 ```
 
-The required packages are most easily installed via the `conda` package manager, and they are available from the `conda-forge` channel. In order to install `conda` (and its faster C++ implementation `mamba`) and to configure the `conda-forge` channel as the default channel, download and run the following install script:
+The required packages are most easily installed via the `conda` package manager, and they are available from the `conda-forge` channel. In order to install `conda` (and its faster C++ implementation `mamba`) and to configure the `conda-forge` channel as the default channel, download and run the following installation script:
 ```shell
 wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
 chmod +x Mambaforge-Linux-x86_64.sh
@@ -48,11 +48,11 @@ and make the Jupyter config file that is created after running the previous step
 chmod 400 ~/.jupyter/jupyter_server_config.py 
 ```
 
-Edit the template job script `scripts/jupyter_dask.bsh`, **uncommenting the block corresponding to the desired SURF system**. The job configuration details can be further customized depending on the specific requirements for the node running the Jupyter server.  
+The repository directory `scripts` contains template job scripts for Spider and Snellius. These scripts define the requirements of the SLURM job running the Jupyter server, they can be customized depending on the specific user needs.  
 
 ### Dask
 
-The repository `config/dask` directory contains a template Dask configuration file. This file defines the default worker settings in the Dask cluster, and it thus **needs to be edited depending on the SURF system** which we are running on. In particular, **uncomment the correct block in  `config/dask/config.yaml`**, then copy the file to `${HOME}/.config/dask`:
+The repository directory `config/dask` contains a template Dask configuration file. This file defines the default worker settings in the Dask cluster, and it thus **needs to be edited depending on the SURF system** which we are running on. In particular, **uncomment the correct block in  `config/dask/config.yaml`**, then copy the file to `${HOME}/.config/dask`:
 ```shell
 mkdir -p ~/.config/dask
 cp -r config/dask/config.yaml ~/.config/dask/. 
@@ -97,7 +97,7 @@ python scripts/runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME>
 
 A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab interface (login using the password set as above). 
 
-A Dask cluster (with no worker) is started together with the JupyterLab session and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers. 
+A Dask cluster (with no worker) is started together with the JupyterLab session, and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers. 
 
 ## Shutting down
 
@@ -107,13 +107,13 @@ From the Jupyter interface, select "File > Shutdown" to stop the Jupyter server 
 
 If the job running the Jupyter server and the Dask scheduler is killed, the Dask workers will also be killed shortly after (configure this using the `death-timeout` key in the config file).
 
-## Throubleshooting
+## Troubleshooting
 
 ### Manual deployment
 
-As an alternative to the deployment script, the Jupyter and Dask services can  be started via the the following "manual" procedure.
+As an alternative to the deployment script, the Jupyter and Dask services can  be started via the following "manual" procedure.
 
-Login to the SURF system, then submit a batch job script based on the template provided in `scripts/jupyter_dask.bsh` to start the Jupyter server and the Dask scheduler on a compute node: 
+Login to the SURF system, then submit a batch job script based on the template provided in `scripts/jupyter_dask.bsh` to start the Jupyter server and the Dask scheduler on a compute-node: 
 ```shell
 sbatch scripts/jupyter_dask.bsh
 ```
