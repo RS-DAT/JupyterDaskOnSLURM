@@ -12,7 +12,7 @@ git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
 cd JupyterDaskOnSLURM
 ```
 
-The required packages are most easily installed via the `conda` package manager, and they are available from the `conda-forge` channel. In order to install `conda` (and its faster C++ implementation `mamba`) and to configure the `conda-forge` channel as the default channel, download and run the following installation script:
+The required packages are most easily installed via the `conda` package manager, and they are available from the `conda-forge` channel. In order to install `conda` (and its faster C++ implementation `mamba`) and to configure the `conda-forge` channel as the default channel, download and run the following installation script (you can skip this step if `conda` is already installed):
 ```shell
 wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
 chmod +x Mambaforge-Linux-x86_64.sh
