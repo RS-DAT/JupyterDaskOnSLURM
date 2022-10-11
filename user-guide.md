@@ -74,7 +74,7 @@ More information on how to read files from the dCache storage are provided in th
 
 This repository includes [a Python script](./scripts/runJupyterDaskOnSLURM.py) to start Jupyter and Dask services on a SURF system that has been configured following the steps above. 
 
-Download the script on your local machine by cloning this repository:
+**On your local machine**, download the script by cloning this repository:
 ```shell
 git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git 
 cd JupyterDaskOnSLURM
