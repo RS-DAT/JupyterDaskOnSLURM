@@ -38,11 +38,13 @@ remoteScriptWD  : Path to directory on remote host where job submission scripts 
 """ 
 
 
-import os
 import argparse
 import configparser
+import math
+import os
 import time
 import webbrowser
+
 from fabric import Connection
 
 
@@ -250,7 +252,7 @@ def check_for_SLURM(conn,outfilename,args):
     """
 
     if args.wait_time is not None:
-        attempts = int(ceil(args.wait_time)/2)
+        attempts = int(math.ceil(args.wait_time)/2)
     else:
         attempts = 10
 
