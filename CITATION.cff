@@ -1,0 +1,39 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: JupyterDaskOnSLURM
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Francesco
+    family-names: Nattino
+    email: f.nattino@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0003-3286-0139'
+  - given-names: Meiert W.
+    family-names: Grootes
+    email: m.grootes@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0002-5733-4795'
+  - given-names: Ou
+    family-names: Ku
+    email: o.ku@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0002-5373-5209'
+repository-code: 'https://github.com/RS-DAT/JupyterDaskOnSLURM'
+abstract: >-
+  This repository contains instructions and material
+  to setup and run a Jupyter server and a Dask
+  cluster on a SLURM system, such as the Spider data
+  processing platform and the Snellius supercomputer,
+  both hosted by SURF.
+keywords:
+  - Dask
+  - Jupyter
+  - Big data
+license: Apache-2.0
+version: '0.1'
+date-released: '2022-11-21'

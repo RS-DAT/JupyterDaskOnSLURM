@@ -1,0 +1,31 @@
+{
+  "creators": [
+    {
+      "affiliation": "Netherlands eScience Center",
+      "name": "Nattino, Francesco",
+      "orcid": "0000-0003-3286-0139"
+    },
+    {
+      "affiliation": "Netherlands eScience Center",
+      "name": "Grootes, Meiert W.",
+      "orcid": "0000-0002-5733-4795"
+    },
+    {
+      "affiliation": "Netherlands eScience Center",
+      "name": "Ku, Ou",
+      "orcid": "0000-0002-5373-5209"
+    }
+  ],
+  "description": "This repository contains instructions and material to setup and run a Jupyter server and a Dask cluster on a SLURM system, such as the Spider data processing platform and the Snellius supercomputer, both hosted by SURF.",
+  "keywords": [
+    "Dask",
+    "Jupyter",
+    "Big data"
+  ],
+  "license": {
+    "id": "Apache-2.0"
+  },
+  "publication_date": "2022-11-21",
+  "title": "JupyterDaskOnSLURM",
+  "version": "0.1"
+}
