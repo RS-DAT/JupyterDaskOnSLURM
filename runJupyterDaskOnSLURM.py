@@ -248,13 +248,15 @@ def check_for_SLURM(conn,outfilename,args):
     :param conn: ssh connection object
     :param outfilename: name of file to check for
     :param args: ArgumentParser return object containing command line arguments. Included for optional specification of time to
-                 wait for successful scheduling (ddefault 20s) 
+                 wait for successful scheduling (default 40s) 
     """
 
     if args.wait_time is not None:
         attempts = int(math.ceil(args.wait_time)/2)
+        wait_time = args.wait_time
     else:
-        attempts = 10
+        attempts = 20
+        wait_time = 40
 
     cmd = f"cd {remoteWD} && [ ! -f {outfilename} ] && echo 'waiting' || echo 'found' "
     i=0
@@ -272,7 +274,7 @@ def check_for_SLURM(conn,outfilename,args):
                 time.sleep(2)
             else:
                 i+= 1
-                print(f"SLURM outputfile {outfilename} was not found after {args.wait_time} seconds. Aborting")
+                print(f"SLURM outputfile {outfilename} was not found after {wait_time} seconds. Aborting")
     return file_present 
 
 
@@ -282,7 +284,7 @@ def check_for_node_info(conn, outfilename):
     empty = True
     count = 0
     while empty:
-        if count <= 10:
+        if count <= 20:
             result = conn.run(cmd)
             if '/path/to/private/ssh/key' in result.stdout:
                 empty = False
@@ -323,7 +325,7 @@ def check_for_server(conn, outfilename):
     empty = True 
     count = 0
     while empty:
-        if count <= 10:
+        if count <= 30:
             result = conn.run(cmd)
             if 'is running at' in result.stdout:
                 empty = False
