@@ -230,10 +230,10 @@ def check_and_retrieve_SLURM_info(conn,outfilename,args):
             if server_running:
                 forwardconfig = retrieve_node_info(conn,outfilename)
             else:
-                print("jupyter server has not spun up succesfully 10 seconds after node allocation.")
+                print("jupyter server has not spun up succesfully 30 seconds after node allocation.")
                 print("Please check submission on remote host.")
         else:
-            print("no node information available in SLURM output file 10 seconds after initialization.")
+            print("no node information available in SLURM output file 20 seconds after initialization.")
             print("Please check submission on remote host.")
     else:
         print("SLURM failed to schedule job for submission within specified time\n")
