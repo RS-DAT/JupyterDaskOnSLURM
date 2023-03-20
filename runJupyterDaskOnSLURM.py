@@ -50,7 +50,9 @@ from fabric import Connection
 
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
+remoteJDD = '~/JupyterDaskOnSLURM'
 remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'
+mamba_URL = 'https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh'
 
 
 def parse_cla():
@@ -379,6 +381,207 @@ def forward_port_and_launch_local(conn,forwardconfig):
         else:
             print('Launching webbrowser failed')
 
+def check_clone(conn):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"if test -d JupyterDaskOnSLURM; then echo 'True'; fi"
+    folder_exists = False
+    result = conn.run(cmd)
+    folder_exists = result.stdout
+    return folder_exists
+
+def clone_folder(conn):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"git clone https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
+    conn.run(cmd)
+    return None
+
+def test_mamba(conn):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"which mamba"
+    result = conn.run(cmd, warn=True)
+    mamba_exists = True
+    if 'no mamba in' in result.stderr:
+        mamba_exists = False
+    return mamba_exists
+
+def install_mamba(conn):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"cd {remoteWD} && wget {mamba_URL} && chmod +x Mambaforge-Linux-x86_64.sh && ./Mambaforge-Linux-x86_64.sh"
+    conn.run(cmd)
+    return None
+
+def test_env(conn, envfile):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"cd {remoteJDD} && head -1 {envfile} && mamba env list"
+    result = conn.run(cmd)
+    env_exists = False
+    index = result.stdout.find('\n')
+    envname = result.stdout[6:index]
+    if envname in result.stdout[index+1:]:
+        env_exists = True
+    return env_exists, envname
+
+def create_env(conn, envfile):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"cd {remoteJDD} && mamba env create -f {envfile}"
+    conn.run(cmd)
+    return None
+
+def check_jpconfig(conn):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"if test -f ~/.jupyter/jupyter_server_config.py ; then echo 'True'; fi"
+    jpconfig_exists = False
+    result = conn.run(cmd)
+    jpconfig_exists = result.stdout
+    return jpconfig_exists
+
+def jpconfig(conn, envname):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host  
+    """
+    cmd = f'cd {remoteJDD} && mamba activate {envname} && jupyter server --generate-config && jupyter server password && chmod 400 ~/.jupyter/jupyter_server_config.py'
+    conn.run(cmd)
+    return None
+
+def check_daskconfig(conn):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"if test -f ~/.config/dask/config.yml ; then echo 'True'; fi"
+    daskconfig_exists = False
+    result = conn.run(cmd)
+    daskconfig_exists = result.stdout
+    return daskconfig_exists
+
+def daskconfig(conn, platform):
+    """
+    Submit batch job with jupyter server on remote host
+
+    :param conn: ssh connection object
+    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
+    :param platform: platform name
+    :return outfilename: name of slurm output file on remote host
+    """
+    cmd = f"cd {remoteJDD} && mkdir -p ~/.config/dask && cp -r config/dask/config_{platform}.yml ~/.config/dask/config.yml"
+    conn.run(cmd)
+    return None
+
+
+def install_JD(config_inputs, platform_name, envfile):
+    #Clone folder as needed
+    folder_exists = ssh_remote_executor(config_inputs, check_clone)
+    if not folder_exists:
+        ssh_remote_executor(config_inputs, clone_folder)
+        folder_exists = ssh_remote_executor(config_inputs, check_clone)
+        if not folder_exists:
+            raise ValueError(f'Error cloning repository. Check git credentials or clone manually')
+        
+    #Install mamba as needed
+    mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
+    if not mamba_exists:
+        ssh_remote_executor(config_inputs, install_mamba)
+        mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
+        if not mamba_exists:
+            raise ValueError(f'Error installing mamba. Please install manually')
+        
+    #Create environment
+    env_exists, envname = ssh_remote_executor(config_inputs, test_env, envfile)
+    if not env_exists:
+        ssh_remote_executor(config_inputs, create_env, envfile)
+        env_exists = ssh_remote_executor(config_inputs, test_env, envfile)
+        if not env_exists:
+            raise ValueError(f'Error creating environment. Please create manually')
+        
+    #Configure Jupyter
+    jpconfig_exists = ssh_remote_executor(config_inputs, check_jpconfig)
+    if not jpconfig_exists:
+        ssh_remote_executor(config_inputs, jpconfig, envname)
+        jpconfig_exists = ssh_remote_executor(config_inputs, check_jpconfig)
+        if not jpconfig_exists:
+            raise ValueError(f'Error configuring jupyter. Please configure manually')    
+    
+    #Configure Dask
+    daskconfig_exists = ssh_remote_executor(config_inputs, check_daskconfig)
+    if not daskconfig_exists:
+        ssh_remote_executor(config_inputs, daskconfig, platform_name)
+        daskconfig_exists = ssh_remote_executor(config_inputs, check_daskconfig)
+        if not daskconfig_exists:
+            raise ValueError(f'Error configuring jupyter. Please configure manually') 
+        
+    #Configure Dcache
+    dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ')
+    if dcache_config == 'Y':
+        print ("dCache configured by User")
+    else: 
+        print ("""
+Please configure dCache as per the instructions in https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/user-guide.md.
+Please note that the deployable analysis environment does not require dCache to run scalable analyses. 
+            """)  
+    
+    install = False
+    if (folder_exists and mamba_exists and env_exists and jpconfig_exists and daskconfig_exists):
+        install = True
+    
+    return install
 
 def main():
     """
@@ -389,13 +592,19 @@ def main():
     args = parse_cla()
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
-    # submit batch job with scheduler
-    outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-    forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
-    if forwardconfig is None:
-        print('submission appears to have failed.')
+    # Check and install on remote as needed
+    install = install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+
+    if install:
+        # submit batch job with scheduler
+        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        if forwardconfig is None:
+            print('submission appears to have failed.')
+        else:
+            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
     else:
-        _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+        print ('Existing or current installation was unsuccessful. Please retry.')
 
 
 if __name__ == '__main__':
