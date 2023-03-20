@@ -383,12 +383,10 @@ def forward_port_and_launch_local(conn,forwardconfig):
 
 def check_clone(conn):
     """
-    Submit batch job with jupyter server on remote host
+    Check if repository has been cloned already on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :return folder_exists: Logical on whether the repository exists on remote host 
     """
     cmd = f"if test -d JupyterDaskOnSLURM; then echo 'True'; fi"
     folder_exists = False
@@ -398,12 +396,10 @@ def check_clone(conn):
 
 def clone_folder(conn):
     """
-    Submit batch job with jupyter server on remote host
+    Clone repository from github to remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :return None:
     """
     cmd = f"git clone https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
     conn.run(cmd)
@@ -411,12 +407,10 @@ def clone_folder(conn):
 
 def test_mamba(conn):
     """
-    Submit batch job with jupyter server on remote host
+    Check if mamba is installed on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :return mamba_exists: Logical on if mamba is installed on remote host
     """
     cmd = f"which mamba"
     result = conn.run(cmd, warn=True)
@@ -427,12 +421,10 @@ def test_mamba(conn):
 
 def install_mamba(conn):
     """
-    Submit batch job with jupyter server on remote host
+    Install mamba on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :return None:
     """
     cmd = f"cd {remoteWD} && wget {mamba_URL} && chmod +x Mambaforge-Linux-x86_64.sh && ./Mambaforge-Linux-x86_64.sh"
     conn.run(cmd)
@@ -440,12 +432,12 @@ def install_mamba(conn):
 
 def test_env(conn, envfile):
     """
-    Submit batch job with jupyter server on remote host
+    Check whether the mamba environment is configured on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :param envfile: Name of the yaml file containing the dependencies and environment name.
+    :return env_exists: Logical on whether environment exists on remote host
+    :return envname: Name of the expected environment
     """
     cmd = f"cd {remoteJDD} && head -1 {envfile} && mamba env list"
     result = conn.run(cmd)
@@ -458,12 +450,11 @@ def test_env(conn, envfile):
 
 def create_env(conn, envfile):
     """
-    Submit batch job with jupyter server on remote host
+    Create mamba environment from file on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :param envfile: Name of the yaml file containing the dependencies and environment name.
+    :return None:
     """
     cmd = f"cd {remoteJDD} && mamba env create -f {envfile}"
     conn.run(cmd)
@@ -471,12 +462,10 @@ def create_env(conn, envfile):
 
 def check_jpconfig(conn):
     """
-    Submit batch job with jupyter server on remote host
+    Check if jupyter has been configured on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host
+    :return jpconfig_exists: Logical on whether jupyter is configured on remote host
     """
     cmd = f"if test -f ~/.jupyter/jupyter_server_config.py ; then echo 'True'; fi"
     jpconfig_exists = False
@@ -486,12 +475,11 @@ def check_jpconfig(conn):
 
 def jpconfig(conn, envname):
     """
-    Submit batch job with jupyter server on remote host
+    Configure jupyter on remote host
 
     :param conn: ssh connection object
-    :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
-    :param platform: platform name
-    :return outfilename: name of slurm output file on remote host  
+    :param envname: Name of the expected environment
+    :return None: 
     """
     cmd = f'cd {remoteJDD} && mamba activate {envname} && jupyter server --generate-config && jupyter server password && chmod 400 ~/.jupyter/jupyter_server_config.py'
     conn.run(cmd)
@@ -499,7 +487,7 @@ def jpconfig(conn, envname):
 
 def check_daskconfig(conn):
     """
-    Submit batch job with jupyter server on remote host
+    Check if dask has been configured on remote host
 
     :param conn: ssh connection object
     :param args: ArgumentParser return object containing command line arguments. included for optional specification of local port
@@ -593,7 +581,11 @@ def main():
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
     # Check and install on remote as needed
-    install = install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+    user_install = input('Are required components already installed on remote host? (Y/n): ')
+    if user_install == 'Y':
+        install = True
+    else:
+        install = install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
 
     if install:
         # submit batch job with scheduler
@@ -604,8 +596,7 @@ def main():
         else:
             _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
     else:
-        print ('Existing or current installation was unsuccessful. Please retry.')
-
+        raise ValueError('Existing or current installation was unsuccessful. Please retry.')
 
 if __name__ == '__main__':
     main()
