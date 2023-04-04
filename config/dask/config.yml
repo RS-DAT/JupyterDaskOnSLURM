@@ -17,9 +17,10 @@ jobqueue:
   slurm:
     name: dask-worker
     # uncomment for Spider
-    cores: 4                    # Total number of cores per job
-    memory: '30GiB'             # Total amount of memory per job
+    cores: 2                    # Total number of cores per job
+    memory: '16GiB'             # Total amount of memory per job
     queue: 'normal'
+    job-extra-directives: ['--reservation=rsdat_course']
 #    # uncomment for Snellius
 #    cores: 32                   # Total number of cores per job
 #    memory: '50GiB'             # Total amount of memory per job
