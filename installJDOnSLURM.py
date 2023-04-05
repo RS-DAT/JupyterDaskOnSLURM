@@ -61,11 +61,10 @@ def test_mamba(conn):
     :param conn: ssh connection object
     :return mamba_exists: Logical on if mamba is installed on remote host
     """
-    cmd = "which mamba"
+    cmd = "if test -f ~/mambaforge/bin/mamba ; then echo 'True'; fi"
+    mamba_exists = False
     result = conn.run(cmd, hide=True)
-    mamba_exists = True
-    if 'no mamba in' in result.stderr:
-        mamba_exists = False
+    mamba_exists = result.stdout
     return mamba_exists
 
 def install_mamba(conn):
@@ -75,8 +74,8 @@ def install_mamba(conn):
     :param conn: ssh connection object
     :return None:
     """
-    cmd = f"cd {remoteWD} && wget {mamba_URL} && chmod +x Mambaforge-Linux-x86_64.sh && ./Mambaforge-Linux-x86_64.sh"
-    conn.run(cmd, hide=True)
+    cmd = f"cd {remoteWD} && wget {mamba_URL} && chmod +x Mambaforge-Linux-x86_64.sh && ./Mambaforge-Linux-x86_64.sh && rm Mambaforge-Linux-x86_64.sh"
+    conn.run(cmd)
     return None
 
 def test_env(conn, envfile):
