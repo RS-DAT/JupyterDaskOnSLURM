@@ -105,7 +105,7 @@ def create_env(conn, envfile):
     :return None:
     """
     cmd = f"cd {remoteJDD} && mamba env create -f {envfile}"
-    conn.run(cmd, hide=True)
+    conn.run(cmd, hide=False)
     return None
 
 def check_jpconfig(conn):
@@ -236,7 +236,7 @@ def remove_env(conn, envname):
     :return outfilename: name of slurm output file on remote host
     """
     cmd = f"cd {remoteWD} && mamba env remove -n {envname}"
-    conn.run(cmd, hide=True)
+    conn.run(cmd, hide=False)
     return None
 
 def remove_files(conn):
@@ -249,7 +249,7 @@ def remove_files(conn):
     :return outfilename: name of slurm output file on remote host
     """
     cmd = f"cd {remoteWD} && rm -f ~/.config/dask/config.yml ~/.jupyter/jupyter_server_config.py "
-    conn.run(cmd, hide=True)
+    conn.run(cmd, hide=False)
     return None
 
 def remove_folders(conn):
@@ -262,14 +262,17 @@ def remove_folders(conn):
     :return outfilename: name of slurm output file on remote host
     """
     cmd = f"cd {remoteWD} && rm -rf ~/JupyterDaskOnSLURM"
-    conn.run(cmd, hide=True)
+    conn.run(cmd, hide=False)
     return None
 
 def uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml'):
     print ('Uninstalling all components...')
     _, envname = ssh_remote_executor(config_inputs, test_env, envfile)
+    print ('Removing environment...')
     ssh_remote_executor(config_inputs, remove_env, envname)
+    print ('Removing JupyterDaskOnSLURM...')
     ssh_remote_executor(config_inputs, remove_folders)
+    print ('Removing config files...')
     ssh_remote_executor(config_inputs, remove_files)
     
     uninstall = True
