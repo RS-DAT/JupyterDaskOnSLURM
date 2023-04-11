@@ -210,13 +210,15 @@ def install_JD(config_inputs, platform_name, envfile):
         
     #Configure Dcache
     dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ')
-    if dcache_config == 'Y':
+    if dcache_config in {'Y', 'y'}:
         print ("dCache configured by User")
-    else: 
+    elif dcache_config in {'N', 'n'}: 
         print ("""
 Please configure dCache as per the instructions in https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/user-guide.md.
 Please note that the deployable analysis environment does not require dCache to run scalable analyses. 
             """)  
+    else:
+        raise ValueError('Chosen option invalid. Please retry.')
     
     install = False
     if (folder_exists and mamba_exists and env_exists and jpconfig_exists and daskconfig_exists):

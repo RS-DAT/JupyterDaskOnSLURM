@@ -389,16 +389,22 @@ def main():
     config_inputs, platform_name = get_config(args)
     # Check and install on remote as needed
     user_install = input('Are required components already installed on remote host? (Y/n): ')
-    if user_install == 'Y':
+    if user_install in {'Y', 'y'}:
         install = True
-    else:
+    elif user_install in {'N', 'n'}:
         install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
-
+    else:
+        raise ValueError('Chosen option invalid. Please retry.')
+    
     user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
     uninstall = False
-    if user_uninstall == 'Y':
+    if user_uninstall in {'Y', 'y'}:
         uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
         install = False
+    elif user_uninstall in {'N', 'n'}:
+        None
+    else:
+        raise ValueError('Chosen option invalid. Please retry.')
 
     if install:
         # submit batch job with scheduler
