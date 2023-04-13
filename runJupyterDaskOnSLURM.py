@@ -80,7 +80,7 @@ def parse_cla():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
-    group.add_argument("--platform", "-p", help="make use of configuration for known platform as saved in platforms.ini.", type=str)
+    group.add_argument("--platform", "-p", help="make use of configuration for known platform as saved in platforms.ini.", nargs=2, type=str)
     args = parser.parse_args()
     return args 
 
@@ -167,11 +167,13 @@ def get_config(args):
     """
 
     if args.add_platform:
-        return add_platform()
+        add_platform()
+        print ("Platform added successfully! Please use '-p {platform} install' to install components or '-p {platform} run' to run if already installed")
+        exit()
     elif args.one_off:
         return add_platform(oneoff=True)
     else:
-        return load_platform_config(args.platform)
+        return load_platform_config(args.platform[0])
 
 
 def ssh_remote_executor(config_inputs, func, *inargs):
@@ -387,26 +389,30 @@ def main():
     args = parse_cla()
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
-    # Check and install on remote as needed
-    user_install = input('Are required components already installed on remote host? (Y/n): ')
-    if user_install in {'Y', 'y'}:
-        install = True
-    elif user_install in {'N', 'n'}:
-        install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
-    else:
-        raise ValueError('Chosen option invalid. Please retry.')
+    if (args.platform[1] == 'install'):
+        # Check and install on remote as needed
+        user_install = input('Do you want to install all components on remote host? (Y/n): ')
+        if user_install in {'Y', 'y'}:
+            install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+            if (install): print ('Installed successfully!')
+            else: print ('Installation unsuccessful! Please try again.')
+        elif user_install in {'N', 'n'}:
+            None
+        else:
+            raise ValueError('Chosen option invalid. Please retry.')
     
-    user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
-    uninstall = False
-    if user_uninstall in {'Y', 'y'}:
-        uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
-        install = False
-    elif user_uninstall in {'N', 'n'}:
-        None
-    else:
-        raise ValueError('Chosen option invalid. Please retry.')
+    elif (args.platform[1] == 'uninstall'):
+        user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
+        if user_uninstall in {'Y', 'y'}:
+            uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+            if (uninstall): print ('Uninstalled successfully!')
+            else: print ('Uninstallation unsuccessful! Please try again.')
+        elif user_uninstall in {'N', 'n'}:
+            None
+        else:
+            raise ValueError('Chosen option invalid. Please retry.')
 
-    if install:
+    elif (args.platform[1] == 'run'):
         # submit batch job with scheduler
         outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
         forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
@@ -414,11 +420,9 @@ def main():
             print('submission appears to have failed.')
         else:
             _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+    
     else:
-        if uninstall:
-            print('Successfully uninstalled all components.')
-        else:
-            raise ValueError('Existing or current installation was unsuccessful. Please retry.')
+        raise argparse.ArgumentError("Valid arguments with -p are ['install', 'uninstall', 'run']")
 
 if __name__ == '__main__':
     main()
