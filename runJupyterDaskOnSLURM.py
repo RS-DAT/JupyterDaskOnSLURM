@@ -11,9 +11,18 @@ The script can most easily be invoked as 'python runJupyterDaskOnSLURM.py --<you
 When invoking the script one of the following command line arguments MUST be provided:
 --add_platform (-a) : The script will query the user for login and connection information for the platform.
                       This information is then saved in ./config/platforms/platforms.ini for future use
---one_off (-oo)     : As for add platform, except that the information entered is NOT saved
---platform (-p)     : The script will look for the login and connection information for the platform specified 
-                      by the string passed and will use this, if successful.
+--one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+                              entered is NOT saved. Note that installation on remote is to be handled manually here.
+--platform (-p) PLATFORM MODE    
+                    : Takes two compulsory arguments.    
+                      The script will look for the login and connection information for the 
+                      PLATFORM specified by the string passed and will use this, if successful.
+    MODE can be one of the following
+                    : install - to install all components on remote host
+                      run - to run JupyterDaskOnSLURM on remote host
+                      uninstall - to remove all components on remote host*
+
+* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
 
 Optionally the user can pass the local port to be used in the Jupyter instance from the remote host. This can be done using
 
@@ -61,9 +70,18 @@ def parse_cla():
         mutually exclusive, one required:
         --add_platform (-a) : The script will query the user for login and connection information for the platform.
                               This information is then saved in ./config/platforms/platforms.ini for future use
-        --one_off (-oo)     : As for add platform, except that the information entered is NOT saved
-        --platform (-p)     : The script will look for the login and connection information for the platform specified 
-                              by the string passed and will use this, if successful.
+        --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+                              entered is NOT saved. Note that installation on remote is to be handled manually here.
+        --platform (-p) {platform} {mode}    
+                    : Takes two compulsory arguments. 
+                      The script will look for the login and connection information for the 
+                      {platform} specified by the string passed and will use this, if successful.
+            {mode} can be one of the following
+                    : install - to install all components on remote host
+                      run - to run JupyterDaskOnSLURM on remote host
+                      uninstall - to remove all components on remote host*
+
+* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
 
         optional:
         --local_port (-lp)  : The script will set up port forwarding to the specified port of the localhost.
@@ -80,7 +98,8 @@ def parse_cla():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
-    group.add_argument("--platform", "-p", help="make use of configuration for known platform as saved in platforms.ini.", nargs=2, type=str)
+    group.add_argument("--platform", "-p", metavar=('PLATFORM', 'MODE'), help="make use of configuration for PLATFORM as saved in platforms.ini. \
+                           Choose MODE='install'/'run'/'uninstall' to install, run, or uninstall package on remote host respectively", nargs=2, type=str)
     args = parser.parse_args()
     return args 
 
@@ -412,7 +431,7 @@ def main():
         else:
             raise ValueError('Chosen option invalid. Please retry.')
 
-    elif (args.platform[1] == 'run'):
+    elif (args.platform[1] == 'run' or args.one_off):
         # submit batch job with scheduler
         outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
         forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
