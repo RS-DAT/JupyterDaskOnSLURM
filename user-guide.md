@@ -4,7 +4,73 @@ The following steps will help you to run a Jupyter server and a Dask cluster on 
 
 This guide assumes that you have received credentials from SURF, that you are able to access the system via SSH, and that an SSH key pair has been set up for password-less login (see the dedicated SURF guides for [Lisa/Snellius](https://servicedesk.surf.nl/wiki/display/WIKI/SSH#SSH-Bonus2:public-keyauthentication) and [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html)). 
 
-## Installation 
+## Local Set-up 
+
+This repository includes [a Python script](./scripts/runJupyterDaskOnSLURM.py) to install the components remotely on a SURF platform (Snellius/Spider/etc.) and to start Jupyter and Dask services on this SURF platform from local. 
+
+**On your local machine**, download the script by cloning this repository:
+```shell
+git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git 
+cd JupyterDaskOnSLURM
+```
+
+The script requires Python 3 and the [Fabric library](https://www.fabfile.org), which can be installed via `pip`:
+```shell
+pip install fabric
+```
+
+Running the script the first time using the option `--add_platform` queries the user for authentication credentials (username and path to the private ssh-key) for a platform (<PLATFORM_NAME>), storing these in a configuration file for later use:
+```shell
+python runJupyterDaskOnSLURM.py --add_platform
+```
+
+### Installation on remote host 
+
+Installing the components on the remote host can then be done on the platform as:
+```shell
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> install
+```
+**NOTE that installation can take a while and requires user input to complete**
+
+#### Configuring DCache
+
+In order to configure access to [the SURF dCache storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html) via [the Filesystem Spec library](https://filesystem-spec.readthedocs.io/en/latest/) (internally used by Dask and other libraries), you can use the configuration file provided in `config/fsspec`. Edit `config/fsspec/config.json`, **replacing the `<MACAROON>` string with the actual macaroon** (see [this guide](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons) for information on how to generate it), then copy the file to `${HOME/.config/fsspec}`:
+```shell
+mkdir -p ~/.config/fsspec
+cp -r config/fsspec/config.json ~/.config/fsspec/. 
+```
+
+More information on how to read files from the dCache storage are provided in the [documentation of the dCacheFS package](https://dcachefs.readthedocs.io/en/latest/).
+
+### Running
+
+You can run Jupyter Lab on the remote server using:
+```shell
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> run
+```
+A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab interface (login using the password set as above). 
+
+A Dask cluster (with no worker) is started together with the JupyterLab session, and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers. 
+
+## Shutting down
+
+From the Dask tab in the Jupyter interface, click "shutdown" on a running cluster instance to kill all workers and the scheduler (a new cluster based on the default configurations can be re-created by pressing the "+" button). 
+
+From the Jupyter interface, select "File > Shutdown" to stop the Jupyter server and release resources.
+
+If the job running the Jupyter server and the Dask scheduler is killed, the Dask workers will also be killed shortly after (configure this using the `death-timeout` key in the config file).
+
+## Uninstallation on Remote host
+
+Uninstalling the components on the remote host can be done as:
+```shell
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> uninstall
+```
+
+This will remove all associated files and folders. However, mamba will remain installed on the remote host and needs to be removed manually, if needed.
+
+## Manual Installation 
+**Follow these instructions if <MODE> = 'install' does not work.**
 
 Login to the SURF system from your terminal, then clone and access this repository:
 ```shell
@@ -52,7 +118,7 @@ The repository directory `scripts` contains template job scripts for Spider and 
 
 ### Dask
 
-The repository directory `config/dask` contains a template Dask configuration file. This file defines the default worker settings in the Dask cluster, and it thus **needs to be edited depending on the SURF system** which we are running on. In particular, **uncomment the correct block in  `config/dask/config.yaml`**, then copy the file to `${HOME}/.config/dask`:
+The repository directory `config/dask` contains a template Dask configuration file. This file defines the default worker settings in the Dask cluster, and it thus **needs to be edited depending on the SURF system or other system** which we are running on. In particular, **uncomment the correct block in  `config/dask/config.yaml`**, then copy the file to `${HOME}/.config/dask`:
 ```shell
 mkdir -p ~/.config/dask
 cp -r config/dask/config.yaml ~/.config/dask/. 
@@ -69,43 +135,6 @@ cp -r config/fsspec/config.json ~/.config/fsspec/.
 ```
 
 More information on how to read files from the dCache storage are provided in the [documentation of the dCacheFS package](https://dcachefs.readthedocs.io/en/latest/).
-
-## Running 
-
-This repository includes [a Python script](./scripts/runJupyterDaskOnSLURM.py) to start Jupyter and Dask services on a SURF system that has been configured following the steps above. 
-
-**On your local machine**, download the script by cloning this repository:
-```shell
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git 
-cd JupyterDaskOnSLURM
-```
-
-The script requires Python 3 and the [Fabric library](https://www.fabfile.org), which can be installed via `pip`:
-```shell
-pip install fabric
-```
-
-Running the script the first time using the option `--add_platform` queries the user for authentication credentials (username and path to the private ssh-key), storing these in a configuration file for later use:
-```shell
-python scripts/runJupyterDaskOnSLURM.py --add_platform
-```
-
-The script can later be run as:
-```shell
-python scripts/runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME>
-```
-
-A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab interface (login using the password set as above). 
-
-A Dask cluster (with no worker) is started together with the JupyterLab session, and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers. 
-
-## Shutting down
-
-From the Dask tab in the Jupyter interface, click "shutdown" on a running cluster instance to kill all workers and the scheduler (a new cluster based on the default configurations can be re-created by pressing the "+" button). 
-
-From the Jupyter interface, select "File > Shutdown" to stop the Jupyter server and release resources.
-
-If the job running the Jupyter server and the Dask scheduler is killed, the Dask workers will also be killed shortly after (configure this using the `death-timeout` key in the config file).
 
 ## Troubleshooting
 
