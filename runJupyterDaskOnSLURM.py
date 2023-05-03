@@ -46,7 +46,7 @@ import time
 import webbrowser
 
 from fabric import Connection
-
+import installJDOnSLURM     #Functions to install or uninstall JDOnSLURM
 
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
@@ -379,24 +379,46 @@ def forward_port_and_launch_local(conn,forwardconfig):
         else:
             print('Launching webbrowser failed')
 
-
 def main():
     """
     Run through steps to launch JupyterDaskOnSLURM instance on remote platform
     """
-
     # parse command line arguments
     args = parse_cla()
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
-    # submit batch job with scheduler
-    outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-    forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
-    if forwardconfig is None:
-        print('submission appears to have failed.')
+    # Check and install on remote as needed
+    user_install = input('Are required components already installed on remote host? (Y/n): ')
+    if user_install in {'Y', 'y'}:
+        install = True
+    elif user_install in {'N', 'n'}:
+        install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
     else:
-        _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+        raise ValueError('Chosen option invalid. Please retry.')
+    
+    user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
+    uninstall = False
+    if user_uninstall in {'Y', 'y'}:
+        uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+        install = False
+    elif user_uninstall in {'N', 'n'}:
+        None
+    else:
+        raise ValueError('Chosen option invalid. Please retry.')
 
+    if install:
+        # submit batch job with scheduler
+        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        if forwardconfig is None:
+            print('submission appears to have failed.')
+        else:
+            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+    else:
+        if uninstall:
+            print('Successfully uninstalled all components.')
+        else:
+            raise ValueError('Existing or current installation was unsuccessful. Please retry.')
 
 if __name__ == '__main__':
     main()
