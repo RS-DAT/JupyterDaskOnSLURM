@@ -13,16 +13,16 @@ When invoking the script one of the following command line arguments MUST be pro
                       This information is then saved in ./config/platforms/platforms.ini for future use
 --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
                               entered is NOT saved. Note that installation on remote is to be handled manually here.
---platform (-p) PLATFORM MODE    
-                    : Takes two compulsory arguments.    
+--uid (-u)          : Takes the UID of the added platform as argument    
                       The script will look for the login and connection information for the 
-                      PLATFORM specified by the string passed and will use this, if successful.
-    MODE can be one of the following
-                    : install - to install all components on remote host
-                      run - to run JupyterDaskOnSLURM on remote host
-                      uninstall - to remove all components on remote host*
+                      UID specified by the string passed and will use this, if successful.
+--mode (-m)         : One of the following arguments can be passed**:
+                        install - to install all components on remote host
+                        run - to run JupyterDaskOnSLURM on remote host
+                        uninstall - to remove all components on remote host*
 
 * - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
+** - mode does not work in combination with the --one-off argument 
 
 Optionally the user can pass the local port to be used in the Jupyter instance from the remote host. This can be done using
 
@@ -68,20 +68,20 @@ def parse_cla():
 
     Accepted arguments:
         mutually exclusive, one required:
-        --add_platform (-a) : The script will query the user for login and connection information for the platform.
-                              This information is then saved in ./config/platforms/platforms.ini for future use
-        --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
-                              entered is NOT saved. Note that installation on remote is to be handled manually here.
-        --platform (-p) {platform} {mode}    
-                    : Takes two compulsory arguments. 
-                      The script will look for the login and connection information for the 
-                      {platform} specified by the string passed and will use this, if successful.
-            {mode} can be one of the following
-                    : install - to install all components on remote host
-                      run - to run JupyterDaskOnSLURM on remote host
-                      uninstall - to remove all components on remote host*
+            --add_platform (-a) : The script will query the user for login and connection information for the platform.
+                                This information is then saved in ./config/platforms/platforms.ini for future use
+            --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+                                        entered is NOT saved. Note that installation on remote is to be handled manually here.
+            --uid (-u)          : Takes the UID of the added platform as argument    
+                                The script will look for the login and connection information for the 
+                                UID specified by the string passed and will use this, if successful.
+            --mode (-m)         : One of the following arguments can be passed**:
+                                    install - to install all components on remote host
+                                    run - to run JupyterDaskOnSLURM on remote host
+                                    uninstall - to remove all components on remote host*
 
-* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
+    * - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
+    ** - mode does not work in combination with the --one-off argument 
 
         optional:
         --local_port (-lp)  : The script will set up port forwarding to the specified port of the localhost.
@@ -99,8 +99,8 @@ def parse_cla():
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
     group.add_argument("--uid", "-u", help="make use of configuration for known UID as saved in platforms.ini.", type=str)
-    group.add_argument("--platform", "-p", metavar=('PLATFORM', 'MODE'), help="make use of configuration for PLATFORM as saved in platforms.ini. \
-                           Choose MODE='install'/'run'/'uninstall' to install, run, or uninstall package on remote host respectively", nargs=2, type=str)
+    parser.add_argument("--mode", "-m", metavar=('MODE'), help="Choose MODE='install'/'run'/'uninstall' to install, run, or \
+                                            uninstall package on remote host respectively", type=str)
     args = parser.parse_args()
     return args 
 
@@ -168,7 +168,7 @@ def load_platform_config(uid):
     config.read(config_path)
     if uid not in config.sections():
         raise ValueError(
-            f'unknown UID: {uid}. Please add platform')
+            f'unknown UID: {uid}. Please add UID through --add_platform')
     else:
         pfconfig = config[uid]
         config_inputs = {'platform':pfconfig['platform'], 'host':pfconfig['host'], 'user':pfconfig['user'], 'keypath':pfconfig['keypath']}
@@ -189,7 +189,7 @@ def get_config(args):
 
     if args.add_platform:
         add_platform()
-        print ("Platform added successfully! Please use '-p {platform} install' to install components or '-p {platform} run' to run if already installed")
+        print ("Platform added successfully! Please use '--uid {UID} --mode install' to install components or '--uid {UID} --mode run' to run if already installed")
         exit()
     elif args.one_off:
         return add_platform(oneoff=True)
@@ -411,7 +411,7 @@ def main():
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
     
-    if  (args.platform == None and args.one_off):
+    if  (args.mode == None and args.one_off):
         # submit batch job with scheduler
         outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
         forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
@@ -420,7 +420,7 @@ def main():
         else:
             _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
-    elif (args.platform[1] == 'install'):
+    elif (args.mode == 'install'):
         # Check and install on remote as needed
         user_install = input('Do you want to install all components on remote host? (Y/n): ')
         if user_install in {'Y', 'y'}:
@@ -432,7 +432,7 @@ def main():
         else:
             raise ValueError('Chosen option invalid. Please retry.')
     
-    elif (args.platform[1] == 'uninstall'):
+    elif (args.mode == 'uninstall'):
         user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
         if user_uninstall in {'Y', 'y'}:
             uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
@@ -443,7 +443,7 @@ def main():
         else:
             raise ValueError('Chosen option invalid. Please retry.')
 
-    elif (args.platform[1] == 'run'):
+    elif (args.mode == 'run'):
         # submit batch job with scheduler
         outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
         forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
