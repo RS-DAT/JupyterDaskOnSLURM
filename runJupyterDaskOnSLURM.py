@@ -11,9 +11,18 @@ The script can most easily be invoked as 'python runJupyterDaskOnSLURM.py --<you
 When invoking the script one of the following command line arguments MUST be provided:
 --add_platform (-a) : The script will query the user for login and connection information for the platform.
                       This information is then saved in ./config/platforms/platforms.ini for future use
---one_off (-oo)     : As for add platform, except that the information entered is NOT saved
---uid (-u     )     : The script will look for the login and connection information for the UID specified 
-                      by the string passed and will use this, if successful.
+--one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+                              entered is NOT saved. Note that installation on remote is to be handled manually here.
+--platform (-p) PLATFORM MODE    
+                    : Takes two compulsory arguments.    
+                      The script will look for the login and connection information for the 
+                      PLATFORM specified by the string passed and will use this, if successful.
+    MODE can be one of the following
+                    : install - to install all components on remote host
+                      run - to run JupyterDaskOnSLURM on remote host
+                      uninstall - to remove all components on remote host*
+
+* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
 
 Optionally the user can pass the local port to be used in the Jupyter instance from the remote host. This can be done using
 
@@ -46,7 +55,7 @@ import time
 import webbrowser
 
 from fabric import Connection
-
+import installJDOnSLURM     #Functions to install or uninstall JDOnSLURM
 
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
@@ -61,9 +70,18 @@ def parse_cla():
         mutually exclusive, one required:
         --add_platform (-a) : The script will query the user for login and connection information for the platform.
                               This information is then saved in ./config/platforms/platforms.ini for future use
-        --one_off (-oo)     : As for add platform, except that the information entered is NOT saved
-        --uid (-u)          : The script will look for the login and connection information for the UID specified 
-                              by the string passed and will use this, if successful.
+        --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+                              entered is NOT saved. Note that installation on remote is to be handled manually here.
+        --platform (-p) {platform} {mode}    
+                    : Takes two compulsory arguments. 
+                      The script will look for the login and connection information for the 
+                      {platform} specified by the string passed and will use this, if successful.
+            {mode} can be one of the following
+                    : install - to install all components on remote host
+                      run - to run JupyterDaskOnSLURM on remote host
+                      uninstall - to remove all components on remote host*
+
+* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
 
         optional:
         --local_port (-lp)  : The script will set up port forwarding to the specified port of the localhost.
@@ -81,6 +99,8 @@ def parse_cla():
     group.add_argument("--add_platform", "-a", help="add new platform and store config", action="store_true")
     group.add_argument("--one_off", "-oo", help="one-off interactive configuration", action="store_true")
     group.add_argument("--uid", "-u", help="make use of configuration for known UID as saved in platforms.ini.", type=str)
+    group.add_argument("--platform", "-p", metavar=('PLATFORM', 'MODE'), help="make use of configuration for PLATFORM as saved in platforms.ini. \
+                           Choose MODE='install'/'run'/'uninstall' to install, run, or uninstall package on remote host respectively", nargs=2, type=str)
     args = parser.parse_args()
     return args 
 
@@ -168,7 +188,9 @@ def get_config(args):
     """
 
     if args.add_platform:
-        return add_platform()
+        add_platform()
+        print ("Platform added successfully! Please use '-p {platform} install' to install components or '-p {platform} run' to run if already installed")
+        exit()
     elif args.one_off:
         return add_platform(oneoff=True)
     else:
@@ -380,24 +402,58 @@ def forward_port_and_launch_local(conn,forwardconfig):
         else:
             print('Launching webbrowser failed')
 
-
 def main():
     """
     Run through steps to launch JupyterDaskOnSLURM instance on remote platform
     """
-
     # parse command line arguments
     args = parse_cla()
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
-    # submit batch job with scheduler
-    outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-    forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
-    if forwardconfig is None:
-        print('submission appears to have failed.')
-    else:
-        _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+    
+    if  (args.platform == None and args.one_off):
+        # submit batch job with scheduler
+        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        if forwardconfig is None:
+            print('submission appears to have failed.')
+        else:
+            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
+    elif (args.platform[1] == 'install'):
+        # Check and install on remote as needed
+        user_install = input('Do you want to install all components on remote host? (Y/n): ')
+        if user_install in {'Y', 'y'}:
+            install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+            if (install): print ('Installed successfully!')
+            else: print ('Installation unsuccessful! Please try again.')
+        elif user_install in {'N', 'n'}:
+            None
+        else:
+            raise ValueError('Chosen option invalid. Please retry.')
+    
+    elif (args.platform[1] == 'uninstall'):
+        user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
+        if user_uninstall in {'Y', 'y'}:
+            uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
+            if (uninstall): print ('Uninstalled successfully!')
+            else: print ('Uninstallation unsuccessful! Please try again.')
+        elif user_uninstall in {'N', 'n'}:
+            None
+        else:
+            raise ValueError('Chosen option invalid. Please retry.')
+
+    elif (args.platform[1] == 'run'):
+        # submit batch job with scheduler
+        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        if forwardconfig is None:
+            print('submission appears to have failed.')
+        else:
+            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+    
+    else:
+        raise argparse.ArgumentError("Valid arguments with -p are ['install', 'uninstall', 'run'] or -oo for one-off connection")
 
 if __name__ == '__main__':
     main()
