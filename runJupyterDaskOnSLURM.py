@@ -408,7 +408,17 @@ def main():
     args = parse_cla()
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
-    if (args.platform[1] == 'install'):
+    
+    if  (args.platform == None and args.one_off):
+        # submit batch job with scheduler
+        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        if forwardconfig is None:
+            print('submission appears to have failed.')
+        else:
+            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+
+    elif (args.platform[1] == 'install'):
         # Check and install on remote as needed
         user_install = input('Do you want to install all components on remote host? (Y/n): ')
         if user_install in {'Y', 'y'}:
@@ -431,7 +441,7 @@ def main():
         else:
             raise ValueError('Chosen option invalid. Please retry.')
 
-    elif (args.platform[1] == 'run' or args.one_off):
+    elif (args.platform[1] == 'run'):
         # submit batch job with scheduler
         outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
         forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
@@ -441,7 +451,7 @@ def main():
             _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
     
     else:
-        raise argparse.ArgumentError("Valid arguments with -p are ['install', 'uninstall', 'run']")
+        raise argparse.ArgumentError("Valid arguments with -p are ['install', 'uninstall', 'run'] or -oo for one-off connection")
 
 if __name__ == '__main__':
     main()
