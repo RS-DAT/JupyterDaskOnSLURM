@@ -4,12 +4,20 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.11
-  - dask[complete] 
+  - python=3.9
+  - dask[complete]
   - dask-jobqueue
   - jupyterlab>=3
   - dask-labextension
   - jupyterlab-git
+  - gdal
+  - xarray
+  - rioxarray
+  - matplotlib 
+  - h5netcdf
+  - zarr
   - pip
   - pip:
-    - dcachefs
+    - stac2dcache
+    - /project/stursdat/Software/stm/. 
+    - /project/stursdat/Software/sarxarray/.

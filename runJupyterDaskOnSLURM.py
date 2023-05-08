@@ -294,7 +294,7 @@ def check_for_SLURM(conn,outfilename,args):
         else:
             if i <= (attempts-2):
                 i+= 1
-                time.sleep(2)
+                time.sleep(5)
             else:
                 i+= 1
                 print(f"SLURM outputfile {outfilename} was not found after {wait_time} seconds. Aborting")
