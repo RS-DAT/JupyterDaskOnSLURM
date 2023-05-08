@@ -50,7 +50,7 @@ def clone_folder(conn):
     :param conn: ssh connection object
     :return None:
     """
-    cmd = "git clone https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
+    cmd = "git clone --branch workshops https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
     conn.run(cmd, hide=True)
     return None
 
