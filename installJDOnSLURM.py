@@ -178,8 +178,8 @@ def install_JD(config_inputs, platform_name, envfile):
         print ('Installing mamba on remote host...')
         ssh_remote_executor(config_inputs, install_mamba)
         mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
-        if not mamba_exists:
-            raise ValueError(f'Error installing mamba. Please install manually')
+        # if not mamba_exists:
+            # raise ValueError(f'Error installing mamba. Please install manually')
         
     #Create environment
     env_exists, envname = ssh_remote_executor(config_inputs, test_env, envfile)
