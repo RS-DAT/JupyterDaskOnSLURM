@@ -74,7 +74,7 @@ def install_mamba(conn):
     :param conn: ssh connection object
     :return None:
     """
-    cmd = f"cd {remoteWD} && wget {mamba_URL} && chmod +x Mambaforge-Linux-x86_64.sh && ./Mambaforge-Linux-x86_64.sh && rm Mambaforge-Linux-x86_64.sh"
+    cmd = f"/project/stursdat/Software/mambaforge/condabin/conda init"
     conn.run(cmd)
     return None
 
