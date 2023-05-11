@@ -268,8 +268,8 @@ def remove_folders(conn):
 def uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml'):
     print ('Uninstalling all components...')
     _, envname = ssh_remote_executor(config_inputs, test_env, envfile)
-    print ('Removing environment...')
-    ssh_remote_executor(config_inputs, remove_env, envname)
+    # print ('Removing environment...')
+    # ssh_remote_executor(config_inputs, remove_env, envname)
     print ('Removing JupyterDaskOnSLURM...')
     ssh_remote_executor(config_inputs, remove_folders)
     print ('Removing config files...')
