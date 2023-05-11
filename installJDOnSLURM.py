@@ -74,7 +74,7 @@ def install_mamba(conn):
     :param conn: ssh connection object
     :return None:
     """
-    cmd = f"/project/stursdat/Software/mambaforge/condabin/conda init"
+    cmd = f"/project/stursdat/Software/mambaforge/condabin/conda init; mamba init"
     conn.run(cmd)
     return None
 
