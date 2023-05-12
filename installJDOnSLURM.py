@@ -61,7 +61,7 @@ def test_mamba(conn):
     :param conn: ssh connection object
     :return mamba_exists: Logical on if mamba is installed on remote host
     """
-    cmd = "if test -f ~/mambaforge/bin/mamba ; then echo 'True'; fi"
+    cmd = "if command -v mamba ; then echo 'True'; fi"
     mamba_exists = False
     result = conn.run(cmd, hide=True)
     mamba_exists = result.stdout
@@ -74,7 +74,9 @@ def install_mamba(conn):
     :param conn: ssh connection object
     :return None:
     """
-    cmd = f"/project/stursdat/Software/mambaforge/condabin/conda init; mamba init"
+    cmd = f"/project/stursdat/Software/mambaforge/condabin/conda init"
+    conn.run(cmd)
+    cmd = f"mamba init"  # need to login again to access mamba
     conn.run(cmd)
     return None
 
@@ -178,8 +180,8 @@ def install_JD(config_inputs, platform_name, envfile):
         print ('Installing mamba on remote host...')
         ssh_remote_executor(config_inputs, install_mamba)
         mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
-        # if not mamba_exists:
-            # raise ValueError(f'Error installing mamba. Please install manually')
+        if not mamba_exists:
+            raise ValueError(f'Error installing mamba. Please install manually')
         
     #Create environment
     env_exists, envname = ssh_remote_executor(config_inputs, test_env, envfile)
@@ -209,7 +211,7 @@ def install_JD(config_inputs, platform_name, envfile):
             raise ValueError(f'Error configuring dask. Please configure manually') 
         
     #Configure Dcache
-    dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ')
+    dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ') or 'Y'
     if dcache_config in {'Y', 'y'}:
         print ("dCache configured by User")
     elif dcache_config in {'N', 'n'}: 
@@ -277,3 +279,4 @@ def uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml'):
     
     uninstall = True
     return uninstall
+
