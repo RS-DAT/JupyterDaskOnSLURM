@@ -422,7 +422,7 @@ def main():
 
     elif (args.mode == 'install'):
         # Check and install on remote as needed
-        user_install = input('Do you want to install all components on remote host? (Y/n): ')
+        user_install = input('Do you want to install all components on remote host? (Y/n): ') or 'Y'
         if user_install in {'Y', 'y'}:
             install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
             if (install): print ('Installed successfully!')
@@ -433,7 +433,7 @@ def main():
             raise ValueError('Chosen option invalid. Please retry.')
     
     elif (args.mode == 'uninstall'):
-        user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
+        user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ') or 'Y'
         if user_uninstall in {'Y', 'y'}:
             uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
             if (uninstall): print ('Uninstalled successfully!')
