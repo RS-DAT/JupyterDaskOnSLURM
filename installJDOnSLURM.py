@@ -131,7 +131,7 @@ def jpconfig(conn, envname):
     :param envname: Name of the expected environment
     :return None: 
     """
-    cmd = f'cd {remoteJDD} && mamba activate {envname} && jupyter server --generate-config && jupyter server password && chmod 400 ~/.jupyter/jupyter_server_config.py'
+    cmd = f'cd {remoteJDD} && conda activate {envname} && jupyter server --generate-config && jupyter server password && chmod 400 ~/.jupyter/jupyter_server_config.py'
     conn.run(cmd, hide=False)
     return None
 
