@@ -1,6 +1,6 @@
 distributed:
   dashboard:
-    link: "/proxy/8787/status"
+    link: "/proxy/{port}/status"
 labextension:
   factory:
     module: 'dask_jobqueue'
