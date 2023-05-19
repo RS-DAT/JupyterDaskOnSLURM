@@ -14,9 +14,9 @@ git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
 cd JupyterDaskOnSLURM
 ```
 
-The script requires Python 3 and the [Fabric library](https://www.fabfile.org), which can be installed via `pip`:
+The script requires Python 3 and the [Fabric library](https://www.fabfile.org) (and, currently, [decorator](https://github.com/micheles/decorator) as well), which can be installed via `pip`:
 ```shell
-pip install fabric
+pip install fabric decorator
 ```
 
 Running the script the first time using the option `--add_platform` queries the user for authentication credentials (username and path to the private ssh-key) for a platform (<PLATFORM_NAME>), storing these in a configuration file for later use:
@@ -28,7 +28,7 @@ python runJupyterDaskOnSLURM.py --add_platform
 
 Installing the components on the remote host can then be done on the platform as:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> install
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> --mode install
 ```
 **NOTE that installation can take a while and requires user input to complete**
 
@@ -46,7 +46,7 @@ More information on how to read files from the dCache storage are provided in th
 
 You can run Jupyter Lab on the remote server using:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> run
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> --mode run
 ```
 A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab interface (login using the password set as above). 
 
@@ -64,7 +64,7 @@ If the job running the Jupyter server and the Dask scheduler is killed, the Dask
 
 Uninstalling the components on the remote host can be done as:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> uninstall
+python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> --mode uninstall
 ```
 
 This will remove all associated files and folders. However, mamba will remain installed on the remote host and needs to be removed manually, if needed.
