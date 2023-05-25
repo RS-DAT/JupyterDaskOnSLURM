@@ -28,7 +28,7 @@ python runJupyterDaskOnSLURM.py --add_platform
 
 Installing the components on the remote host can then be done on the platform as:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> --mode install
+python runJupyterDaskOnSLURM.py --uid <PLATFORM_NAME> --mode install
 ```
 **NOTE that installation can take a while and requires user input to complete**
 
@@ -46,7 +46,7 @@ More information on how to read files from the dCache storage are provided in th
 
 You can run Jupyter Lab on the remote server using:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> --mode run
+python runJupyterDaskOnSLURM.py --uid <PLATFORM_NAME> --mode run
 ```
 A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab interface (login using the password set as above). 
 
@@ -64,7 +64,7 @@ If the job running the Jupyter server and the Dask scheduler is killed, the Dask
 
 Uninstalling the components on the remote host can be done as:
 ```shell
-python runJupyterDaskOnSLURM.py --platform <PLATFORM_NAME> --mode uninstall
+python runJupyterDaskOnSLURM.py --uid <PLATFORM_NAME> --mode uninstall
 ```
 
 This will remove all associated files and folders. However, mamba will remain installed on the remote host and needs to be removed manually, if needed.
