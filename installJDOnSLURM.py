@@ -209,7 +209,7 @@ def install_JD(config_inputs, platform_name, envfile):
             raise ValueError(f'Error configuring dask. Please configure manually') 
         
     #Configure Dcache
-    dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ')
+    dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ') or 'Y'
     if dcache_config in {'Y', 'y'}:
         print ("dCache configured by User")
     elif dcache_config in {'N', 'n'}: 
