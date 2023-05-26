@@ -253,10 +253,10 @@ def check_and_retrieve_SLURM_info(conn,outfilename,args):
             if server_running:
                 forwardconfig = retrieve_node_info(conn,outfilename)
             else:
-                print("jupyter server has not spun up succesfully 10 seconds after node allocation.")
+                print("jupyter server has not spun up succesfully after node allocation.")
                 print("Please check submission on remote host.")
         else:
-            print("no node information available in SLURM output file 10 seconds after initialization.")
+            print("no node information available in SLURM output file 20 seconds after initialization.")
             print("Please check submission on remote host.")
     else:
         print("SLURM failed to schedule job for submission within specified time\n")
@@ -294,7 +294,7 @@ def check_for_SLURM(conn,outfilename,args):
         else:
             if i <= (attempts-2):
                 i+= 1
-                time.sleep(2)
+                time.sleep(5)
             else:
                 i+= 1
                 print(f"SLURM outputfile {outfilename} was not found after {wait_time} seconds. Aborting")
@@ -348,7 +348,7 @@ def check_for_server(conn, outfilename):
     empty = True 
     count = 0
     while empty:
-        if count <= 30:
+        if count <= 300:
             result = conn.run(cmd)
             if 'is running at' in result.stdout:
                 empty = False
@@ -422,7 +422,7 @@ def main():
 
     elif (args.mode == 'install'):
         # Check and install on remote as needed
-        user_install = input('Do you want to install all components on remote host? (Y/n): ')
+        user_install = input('Do you want to install all components on remote host? (Y/n): ') or 'Y'
         if user_install in {'Y', 'y'}:
             install = installJDOnSLURM.install_JD(config_inputs, platform_name, envfile = 'environment.yaml')
             if (install): print ('Installed successfully!')
@@ -433,7 +433,7 @@ def main():
             raise ValueError('Chosen option invalid. Please retry.')
     
     elif (args.mode == 'uninstall'):
-        user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ')
+        user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ') or 'Y'
         if user_uninstall in {'Y', 'y'}:
             uninstall = installJDOnSLURM.uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml')
             if (uninstall): print ('Uninstalled successfully!')
