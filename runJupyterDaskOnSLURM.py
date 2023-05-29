@@ -361,17 +361,18 @@ def check_for_server(conn, outfilename):
             empty = False
     return server_running
 
-def launchJupyterLabLocal(localport):
+def open_browser(url):
     """
-    Launch web browser (system default) listening to local port of fowarded remote jupyter server
+    Launch web browser (system default) and point it to the specified URL
 
-    :param localport: port on localhost 
+    :param url: URL address
     """
-
-    local_address = "http://localhost:"+str(localport)
-    print(local_address)
-    controller = webbrowser.get()
-    success = controller.open(local_address)
+    success = False
+    try:
+        controller = webbrowser.get()
+        success = controller.open(url)
+    except webbrowser.Error:
+        pass
     return success
 
 
@@ -391,16 +392,19 @@ def forward_port_and_launch_local(conn,forwardconfig):
 
     with conn.forward_local(localport,remote_port=remoteport,remote_host=remotehost):
         time.sleep(1)
-        launchsuccess = launchJupyterLabLocal(localport)
-        if launchsuccess:
+        url = f"http://localhost:{localport}"
+        success = open_browser(url)
+        if success:
             print('Webbrowser with connection to remote jupyter server launched')
-            stopforwarding = False
-            while stopforwarding == False: 
-                uin = input("enter 'end' to stop port forwarding:)\n")
-                if uin == 'end' or uin == 'End':
-                    stopforwarding=True
         else:
             print('Launching webbrowser failed')
+            print(f'Open the following URL: {url}')
+        stopforwarding = False
+        while stopforwarding == False:
+            uin = input("enter 'end' to stop port forwarding:)\n")
+            if uin.lower() == 'end':
+                stopforwarding = True
+
 
 def main():
     """
