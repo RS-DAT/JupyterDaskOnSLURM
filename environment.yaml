@@ -8,7 +8,7 @@ dependencies:
   # Jupyter and Dask specific
   - dask[complete]
   - dask-jobqueue
-  - jupyterlab>=3
+  - jupyterlab>=3,<4
   - dask-labextension
   - jupyterlab-git
   # other libraries
