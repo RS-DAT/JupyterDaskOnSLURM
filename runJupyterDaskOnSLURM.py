@@ -150,7 +150,7 @@ def add_platform(oneoff=False):
     else:
         config = configparser.ConfigParser()
         config[uid]=config_inputs
-        with open(config_path, 'w') as cf:
+        with open(config_path, 'a') as cf:
             config.write(cf)
     return config_inputs, platform_name	
 
