@@ -14,7 +14,7 @@ Configurable paths are:
 config_path     : path to config file that is created/updated. default is in local installation of JupyterDaskOnSLURM
                   repository. Can be adapted to user preferences
 remoteWD        : Working directory from which to submit batch job on remote host
-remoteJDD       : Clone directory of JupyterDaskOnSLURM
+remoteJDD       : Copied directory of JupyterDaskOnSLURM
 remoteScriptWD  : Path to directory on remote host where job submission scripts are located
                   ATTENTION! When adding a job script on a plattform other than spider/snellius @SURF the user MUST
                   create a job script for the platform (this can be done by using the existing scripts as templates).
@@ -24,15 +24,16 @@ mamba_URL       : Download URL for mamba installation file
  
 from fabric import Connection
 from runJupyterDaskOnSLURM import ssh_remote_executor
+import os
 
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
 remoteJDD = '~/JupyterDaskOnSLURM'
 mamba_URL = 'https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh'
 
-def check_clone(conn):
+def check_folder(conn):
     """
-    Check if repository has been cloned already on remote host
+    Check if repository has been copied already on remote host
 
     :param conn: ssh connection object
     :return folder_exists: Logical on whether the repository exists on remote host 
@@ -43,15 +44,16 @@ def check_clone(conn):
     folder_exists = result.stdout
     return folder_exists
 
-def clone_folder(conn):
+def copy_folder(conn, config_inputs):
     """
-    Clone repository from github to remote host
+    Copy repository from local to remote host
 
     :param conn: ssh connection object
     :return None:
     """
-    cmd = "git clone --branch workshops https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
-    conn.run(cmd, hide=True)
+    # cmd = "git clone --branch workshops https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
+    cmd = f"scp -i {config_inputs['keypath']} -r ../JupyterDaskOnSLURM {config_inputs['user']}@{config_inputs['host']}:~/. "
+    os.system(cmd)
     return None
 
 def test_mamba(conn):
@@ -165,14 +167,14 @@ def daskconfig(conn, platform):
 
 
 def install_JD(config_inputs, platform_name, envfile):
-    #Clone folder as needed
-    folder_exists = ssh_remote_executor(config_inputs, check_clone)
+    #Copy folder as needed
+    folder_exists = ssh_remote_executor(config_inputs, check_folder)
     if not folder_exists:
-        print ('Cloning JupyterDaskonSLURM on remote host...')
-        ssh_remote_executor(config_inputs, clone_folder)
-        folder_exists = ssh_remote_executor(config_inputs, check_clone)
+        print ('Copying JupyterDaskonSLURM from local to remote host...')
+        ssh_remote_executor(config_inputs, copy_folder, config_inputs)
+        folder_exists = ssh_remote_executor(config_inputs, check_folder)
         if not folder_exists:
-            raise ValueError(f'Error cloning repository. Check git credentials or clone manually')
+            raise ValueError(f'Error copying repository. Please copy manually')
         
     #Install mamba as needed
     mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
