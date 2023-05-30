@@ -279,7 +279,7 @@ def check_for_SLURM(conn,outfilename,args):
         wait_time = args.wait_time
     else:
         attempts = 20
-        wait_time = 40
+        wait_time = 100
 
     cmd = f"cd {remoteWD} && [ ! -f {outfilename} ] && echo 'waiting' || echo 'found' "
     i=0
@@ -313,7 +313,7 @@ def check_for_node_info(conn, outfilename):
                 empty = False
                 info_present = True
             else:
-                time.sleep(1)
+                time.sleep(5)
                 count+=1
         else:
             print("timing out on waiting for SLURM outputfile content")
@@ -348,13 +348,13 @@ def check_for_server(conn, outfilename):
     empty = True 
     count = 0
     while empty:
-        if count <= 300:
+        if count <= 60:
             result = conn.run(cmd)
             if 'is running at' in result.stdout:
                 empty = False
                 server_running = True
             else:
-                time.sleep(1)
+                time.sleep(5)
                 count+=1
         else:
             print("timing out on waiting for Jupyter server to spin up")
