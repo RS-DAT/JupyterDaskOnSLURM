@@ -24,7 +24,7 @@ mamba_URL       : Download URL for mamba installation file
  
 from fabric import Connection
 from runJupyterDaskOnSLURM import ssh_remote_executor
-import os
+import subprocess
 
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
@@ -53,7 +53,7 @@ def copy_folder(conn, config_inputs):
     """
     # cmd = "git clone --branch workshops https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
     cmd = f"scp -i {config_inputs['keypath']} -r ../JupyterDaskOnSLURM {config_inputs['user']}@{config_inputs['host']}:~/. "
-    os.system(cmd)
+    subprocess.run(cmd, shell=True, capture_output=True)
     return None
 
 def test_mamba(conn):
