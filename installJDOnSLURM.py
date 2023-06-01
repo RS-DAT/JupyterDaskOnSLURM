@@ -248,7 +248,7 @@ def remove_files(conn):
     :param platform: platform name
     :return outfilename: name of slurm output file on remote host
     """
-    cmd = f"cd {remoteWD} && rm -f ~/.config/dask/config.yml ~/.jupyter/jupyter_server_config.py "
+    cmd = f"cd {remoteWD} && rm -f ~/.config/dask/config.yml ~/.jupyter/jupyter_server_config.py ~/.jupyter/jupyter_server_config.json "
     conn.run(cmd, hide=False)
     return None
 
@@ -267,11 +267,15 @@ def remove_folders(conn):
 
 def uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml'):
     print ('Uninstalling all components...')
-    _, envname = ssh_remote_executor(config_inputs, test_env, envfile)
-    print ('Removing environment...')
-    ssh_remote_executor(config_inputs, remove_env, envname)
+    folder_exists = ssh_remote_executor(config_inputs, check_clone)
+    if (folder_exists):
+        _, envname = ssh_remote_executor(config_inputs, test_env, envfile)
+        print ('Removing environment...')
+        ssh_remote_executor(config_inputs, remove_env, envname)
+   
     print ('Removing JupyterDaskOnSLURM...')
     ssh_remote_executor(config_inputs, remove_folders)
+
     print ('Removing config files...')
     ssh_remote_executor(config_inputs, remove_files)
     
