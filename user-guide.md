@@ -26,7 +26,9 @@ python runJupyterDaskOnSLURM.py --add_platform
 
 ### Installation on remote host 
 
-Installing the components on the remote host can then be done on the platform as:
+Before installing on the remote host, edit the environment.yaml file in the folder to include all conda/pip packages that are needed to run your proposed workflow.
+
+After editing the environment.yaml file, installing the components on the remote host can be done on the platform as:
 ```shell
 python runJupyterDaskOnSLURM.py --uid <PLATFORM_NAME> --mode install
 ```
@@ -78,6 +80,8 @@ git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
 cd JupyterDaskOnSLURM
 ```
 
+Alternatively copy the local copy of `JupyterDaskOnSLURM` which has the modified `environment.yaml` file with the updated packages to the remote host using the `scp` command. For usage of the `scp` command, you can refer to this [blog post](https://www.howtogeek.com/804179/scp-command-linux/)
+
 The required packages are most easily installed via the `conda` package manager, and they are available from the `conda-forge` channel. In order to install `conda` (and its faster C++ implementation `mamba`) and to configure the `conda-forge` channel as the default channel, download and run the following installation script (you can skip this step if `conda` is already installed):
 ```shell
 wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
@@ -86,7 +90,7 @@ chmod +x Mambaforge-Linux-x86_64.sh
 ```
 After accepting the license term and selecting the installation location (the default is `${HOME}/mambaforge`), type `yes` to initialize Mambaforge. Logout/login to activate.
 
-Create a new environment using the conda environment file provided in this repository:
+Create a new environment using the conda environment file in this repository - note that the base version of this file has been provided but can be updated to include relevant packages for your workflow:
 ```shell
 mamba env create -f environment.yaml
 ```
