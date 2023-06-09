@@ -24,13 +24,14 @@ mamba_URL       : Download URL for mamba installation file
  
 from fabric import Connection
 from runJupyterDaskOnSLURM import ssh_remote_executor
+import subprocess
 
 config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
 remoteJDD = '~/JupyterDaskOnSLURM'
 mamba_URL = 'https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh'
 
-def check_clone(conn):
+def check_copy(conn):
     """
     Check if repository has been cloned already on remote host
 
@@ -43,15 +44,16 @@ def check_clone(conn):
     folder_exists = result.stdout
     return folder_exists
 
-def clone_folder(conn):
+def copy_folder(conn):
     """
-    Clone repository from github to remote host
+    Copy repository from local to remote host
 
     :param conn: ssh connection object
     :return None:
     """
-    cmd = "git clone https://github.com/RS-DAT/JupyterDaskOnSLURM.git"
-    conn.run(cmd, hide=True)
+    cmd = f"scp -i {config_inputs['keypath']} -r ../JupyterDaskOnSLURM {config_inputs['user']}@{config_inputs['host']}:~/. "
+    subprocess.run(cmd, shell=True, capture_output=True)
+    
     return None
 
 def test_mamba(conn):
@@ -163,14 +165,14 @@ def daskconfig(conn, platform):
 
 
 def install_JD(config_inputs, platform_name, envfile):
-    #Clone folder as needed
-    folder_exists = ssh_remote_executor(config_inputs, check_clone)
+    #Copy folder as needed
+    folder_exists = ssh_remote_executor(config_inputs, check_copy)
     if not folder_exists:
         print ('Cloning JupyterDaskonSLURM on remote host...')
-        ssh_remote_executor(config_inputs, clone_folder)
-        folder_exists = ssh_remote_executor(config_inputs, check_clone)
+        ssh_remote_executor(config_inputs, copy_folder)
+        folder_exists = ssh_remote_executor(config_inputs, check_copy)
         if not folder_exists:
-            raise ValueError(f'Error cloning repository. Check git credentials or clone manually')
+            raise ValueError(f'Error cloning repository. Check git credentials or copy manually')
         
     #Install mamba as needed
     mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
