@@ -53,6 +53,7 @@ import math
 import os
 import time
 import webbrowser
+import getpass
 
 from fabric import Connection
 import installJDOnSLURM     #Functions to install or uninstall JDOnSLURM
@@ -122,6 +123,23 @@ def get_verified_input(prompt):
             unverified = False
     return userinput
 
+def get_secret_input(prompt):
+
+    """
+    Query user for secret inputs
+    """
+    unverified = True 
+    while unverified == True:
+        userinput = getpass.getpass(prompt+'\n')
+        print('please re-enter for verification \n')
+        userinput2 = getpass.getpass(prompt+'\n')
+        if userinput == userinput2:
+            unverified = False
+            print('Thank you. Inputs match. Continuing...')
+        else:
+            print('inputs do not match!')
+    return userinput
+
 
 def add_platform(oneoff=False):
     """
@@ -133,6 +151,7 @@ def add_platform(oneoff=False):
         host alias, e.g. USER@spider.surf.nl, where spider.surf.nl is the host alias
         username for platform
         absolute (local) path to SSH key granting access to platform
+        does key have a passphrase
 
     :param oneoff: default False; if true DO NOT save input to config file, but only use for this deployment
     :return config_inputs: dictionary with fields {host: user: keypath:}
@@ -143,7 +162,12 @@ def add_platform(oneoff=False):
     platform_host = get_verified_input('Please enter host (alias), e.g. USER@spider.surf.nl, where spider.surf.nl is the host alias:')
     user_name = get_verified_input('Please enter username for platform: ')
     key_path = get_verified_input('Please enter absolute (local) path to SSH key granting access to platform:')
-    config_inputs = {'platform':platform_name, 'host':platform_host, 'user':user_name, 'keypath':key_path} 
+    key_passphrase = get_verified_input('Does the key require a passphrase. Please answer yes/no.')
+    key_pass_answer = 'False'
+    if key_passphrase in ['Yes','yes','YES','Y','y']:
+        key_pass_answer = 'True'
+
+    config_inputs = {'platform':platform_name, 'host':platform_host, 'user':user_name, 'keypath':key_path, 'key_pass':key_pass_answer} 
 
     if oneoff:
         pass 
@@ -171,7 +195,8 @@ def load_platform_config(uid):
             f'unknown UID: {uid}. Please add UID through --add_platform')
     else:
         pfconfig = config[uid]
-        config_inputs = {'platform':pfconfig['platform'], 'host':pfconfig['host'], 'user':pfconfig['user'], 'keypath':pfconfig['keypath']}
+        config_inputs = {'platform':pfconfig['platform'], 'host':pfconfig['host'], 'user':pfconfig['user'], 'keypath':pfconfig['keypath'], 'key_pass':pfconfig['key_pass']}
+        print(type(config_inputs['key_pass']))
         return config_inputs, pfconfig['platform']
 
 
@@ -206,9 +231,15 @@ def ssh_remote_executor(config_inputs, func, *inargs):
     :param *inargs: positional arguments to be passed to func 
     """
 
-    with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath']}) as conn:
-        result = func(conn, *inargs)
-        return result
+    if config_inputs['key_pass'] == 'False':
+        with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath']}) as conn:
+            result = func(conn, *inargs)
+    elif config_inputs['key_pass'] == 'True':
+        with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath'], 'passphrase':config_inputs['passphrase']}) as conn:
+            result = func(conn, *inargs)
+            
+
+    return result
 
 
 def submit_scheduler(conn, args, platform):
@@ -414,6 +445,9 @@ def main():
     args = parse_cla()
     # retrieve or set config
     config_inputs, platform_name = get_config(args)
+    if config_inputs['key_pass'] == 'True':
+        key_pass_val = get_secret_input('Please supply passphrase for ssh key:')
+        config_inputs['passphrase']=key_pass_val
     
     if  (args.mode == None and args.one_off):
         # submit batch job with scheduler
