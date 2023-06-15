@@ -196,7 +196,6 @@ def load_platform_config(uid):
     else:
         pfconfig = config[uid]
         config_inputs = {'platform':pfconfig['platform'], 'host':pfconfig['host'], 'user':pfconfig['user'], 'keypath':pfconfig['keypath'], 'key_pass':pfconfig['key_pass']}
-        print(type(config_inputs['key_pass']))
         return config_inputs, pfconfig['platform']
 
 
