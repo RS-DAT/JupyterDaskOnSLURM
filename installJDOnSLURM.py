@@ -44,7 +44,7 @@ def check_copy(conn):
     folder_exists = result.stdout
     return folder_exists
 
-def copy_folder(conn):
+def copy_folder(conn, config_inputs):
     """
     Copy repository from local to remote host
 
@@ -169,7 +169,7 @@ def install_JD(config_inputs, platform_name, envfile):
     folder_exists = ssh_remote_executor(config_inputs, check_copy)
     if not folder_exists:
         print ('Cloning JupyterDaskonSLURM on remote host...')
-        ssh_remote_executor(config_inputs, copy_folder)
+        ssh_remote_executor(config_inputs, copy_folder, config_inputs)
         folder_exists = ssh_remote_executor(config_inputs, check_copy)
         if not folder_exists:
             raise ValueError(f'Error cloning repository. Check git credentials or copy manually')
