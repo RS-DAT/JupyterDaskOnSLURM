@@ -23,7 +23,19 @@ authors:
     email: o.ku@esciencecenter.nl
     affiliation: Netherlands eScience Center
     orcid: 'https://orcid.org/0000-0002-5373-5209'
+  - given-names: Pranav
+    family-names: Chandramouli
+    email: p.chandramoulI@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0000-0002-7896-2969'
 repository-code: 'https://github.com/RS-DAT/JupyterDaskOnSLURM'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7342602
+    description: Persistent identifier for all versions of cffconvert
+  - type: url
+    value: https://github.com/RS-DAT/JupyterDaskOnSLURM
+    description: URL to the GitHub repository for JupyterDaskOnSLURM
 abstract: >-
   This repository contains instructions and material
   to setup and run a Jupyter server and a Dask
@@ -35,5 +47,5 @@ keywords:
   - Jupyter
   - Big data
 license: Apache-2.0
-version: '0.1'
-date-released: '2022-11-21'
+version: '0.2'
+date-released: '2023-07-17'
