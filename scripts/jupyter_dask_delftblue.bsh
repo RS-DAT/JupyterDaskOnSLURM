@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ### Initialize the server
 #SBATCH --partition=compute ## one of 'compute', 'gpu', 'memory'
 #SBATCH --ntasks=1
