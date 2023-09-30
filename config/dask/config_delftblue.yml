@@ -17,7 +17,7 @@ jobqueue:
   slurm:
     name: dask-worker
     # uncomment for DelftBlue
-    cores: 1                   # Total number of cores per job. This is for every worker
+    cores: 2                   # Total number of cores per job. This is for every worker
     memory: '1GiB'             # Total amount of memory per job
     queue: 'compute'           # Queue name: 'compute', 'gpu', 'memory`
     processes: 1               # Number of Python processes per job. Threads on each core
