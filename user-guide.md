@@ -196,7 +196,7 @@ module load miniconda3/4.12.0
 git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git 
 cd JupyterDaskOnSLURM
 ```
-3. If required, modigy the `environment.yaml` to include relevant packages for your workflow. Then, crate an environment using conda"
+3. If required, modify the `environment.yaml` to include relevant packages for your workflow. Then, create an environment using conda"
 ```shell
 conda env create -f environment.yaml
 ```
