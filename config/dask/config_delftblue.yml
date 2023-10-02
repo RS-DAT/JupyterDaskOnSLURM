@@ -1,0 +1,26 @@
+distributed:
+  dashboard:
+    link: "/proxy/{port}/status"
+labextension:
+  factory:
+    module: 'dask_jobqueue'
+    class: 'SLURMCluster'
+    args: []
+    kwargs: {}
+  default:
+    workers: null 
+    adapt:
+      null
+  initial:
+    - name: 'SLURMCluster'
+jobqueue:
+  slurm:
+    name: dask-worker
+    # uncomment for DelftBlue
+    cores: 2                   # Total number of cores per job. This is for every worker
+    memory: '1GiB'             # Total amount of memory per job
+    queue: 'compute'           # Queue name: 'compute', 'gpu', 'memory`
+    processes: 1               # Number of Python processes per job. Threads on each core
+    death-timeout: 600         # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: '/scratch/$USER'  # Location of fast local storage like /scratch or $TMPDIR
+    walltime: '2:00:00'
