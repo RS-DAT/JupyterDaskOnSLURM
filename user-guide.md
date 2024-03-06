@@ -179,6 +179,104 @@ ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.surf.nl
 
 Paste the command in a new terminal window **on your local machine** (modify the path to the private key). You can now access the Jupyter session from your browser at `localhost:8889`.
 
+## Container wrapper for SPIDER system
+
+On SPIDER HPC system, using conda environments will lead to performance issues, due to conda's nature of many small files. In such cases, one can containerize the conda environment. One way to do this is to use the [hpc-container-wrapper](https://github.com/CSCfi/hpc-container-wrapper) tool. This is a container wrapper tool developed by Finnish IT center for science (CSC).
+
+To set up the container wrapper, first log in to the HPC system. For example, to log in to the SURF Spider system:
+
+```shell
+ssh USER@spider.surf.nl
+```
+
+We assume you are in the home directory. If not, change to the home directory:
+
+```shell
+cd ~
+```
+
+Then, clone the `hpc-container-wrapper` and `JupyterDaskOnSLURM` repositories:
+
+```shell
+git clone git@github.com:CSCfi/hpc-container-wrapper.git
+git clone git@github.com:RS-DAT/JupyterDaskOnSLURM.git
+```
+
+Change to the `hpc-container-wrapper` directory:
+
+```shell
+cd hpc-container-wrapper
+```
+
+Then, copy the container config file `spider.yaml` file from the `JupyterDaskOnSLURM` repository to the `.config` directory and run the `install.sh` script to install the container wrapper:
+
+```shell
+cp ../JupyterDaskOnSLURM/config/container/spider.yaml ./configs/
+bash install.sh spider
+```
+
+Next, copy the `environment.yaml` file from the `JupyterDaskOnSLURM` repository to the current directory and create a container. In the following example, we create a container under `jupyter_dask` directory:
+
+```shell
+cp ../JupyterDaskOnSLURM/environment.yaml .
+bin/conda-containerize new --prefix ./jupyter_dask ./environment.yaml
+```
+
+At the end of the installation, the tool will print the path to the executable directory (`bin` directory) of the container. For example:
+
+```output
+export PATH="/abusolute/path/to/the/container/bin:$PATH" 
+```
+
+```shell
+cd ..
+mkdir -p ~/.config/dask 
+cp JupyterDaskOnSLURM/config/dask/config_spider.yml ~/.config/dask/config.yml
+```
+
+Then add the following lines to the `~/.config/dask/config.yml` file, under the `slurm` section of `jobqueue` section, note that you need to replace the `export PATH` part with the output from the container creation step:
+
+```yaml
+    job_script_prologue:
+      - 'export PATH="/abusolute/path/to/the/container/bin:$PATH"' # Export environment path to
+    python: python
+```
+
+After adding the lines, the `~/.config/dask/config.yml` file should look like this:
+
+```yaml
+  distributed:
+    ... Some other configurations ...
+  labextension:
+    ... Some other configurations ...
+  jobqueue:
+    slurm:
+      ... Some other configurations ...
+      job_script_prologue:
+        - 'export PATH="/home/caroline-oku/caroline/Public/demo_mobyle/container_wrapper/hpc-container-wrapper/tmp/bin:$PATH"'
+      python: python
+```
+
+Then also configure the SLURM job file `JupyterDaskOnSLURM/scripts/jupyter_dask_spider_container.bsh`. Then replace the following part with the PATH exportaion from the container creation step: 
+
+```shell
+# CHANGE THIS TO THE ABSOLUTE PATH TO THE CONTAINER BIN
+export PATH="/abusolute/path/to/the/container/bin:$PATH"
+```
+
+Now you are all set! The Jupyter Server with Dask plugin and be started using the `jupyter_dask_spider_container.bsh` script.
+
+```shell
+sbatch JupyterDaskOnSLURM/scripts/jupyter_dask_spider_container.bsh
+```
+
+After the job starts, there will be an example `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:
+
+```shell
+ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.surf.nl
+```
+
+You can execute this command in a new terminal window **on your local machine** (modify the path to the private key). You can now access the Jupyter session from your browser at `localhost:8889`.
 
 ## Delft Blue
 
