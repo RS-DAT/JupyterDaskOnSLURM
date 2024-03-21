@@ -195,7 +195,37 @@ We assume you are in the home directory. If not, change to the home directory:
 cd ~
 ```
 
-Then, clone the `hpc-container-wrapper` and `JupyterDaskOnSLURM` repositories:
+Then, clone the `JupyterDaskOnSLURM` repository:
+```shell
+git clone git@github.com:RS-DAT/JupyterDaskOnSLURM.git
+```
+
+change to the `JupyterDaskOnSLURM` directory:
+
+```shell
+cd JupyterDaskOnSLURM
+```
+
+and execute the `spider_container_deploy.sh` script:
+
+```shell
+bash spider_container_deploy.sh
+```
+
+This will run the setup and containerization of the `environment.yaml` file contained in the `JupyterDaskOnSLURM` directory (please modify as needed before running the script).
+
+Now you are all set! 
+
+### manual installation
+Should yopu prefer to manually set up the containerization please follow the steps below, which are otherwise handled by the script.
+
+First change to your home directory:
+
+```shell
+cd ~
+```
+
+Then, assuming you haven't already cloned the `JupyterDaskOnSLURM` repository, clone both the `hpc-container-wrapper` and `JupyterDaskOnSLURM` repositories:
 
 ```shell
 git clone git@github.com:CSCfi/hpc-container-wrapper.git
@@ -218,6 +248,7 @@ bash install.sh spider
 Next, copy the `environment.yaml` file from the `JupyterDaskOnSLURM` repository to the current directory and create a container. In the following example, we create a container under `jupyter_dask` directory:
 
 ```shell
+mkdir -p ./jupyter_dask
 cp ../JupyterDaskOnSLURM/environment.yaml .
 bin/conda-containerize new --prefix ./jupyter_dask ./environment.yaml
 ```
@@ -264,7 +295,10 @@ Then also configure the SLURM job file `JupyterDaskOnSLURM/scripts/jupyter_dask_
 export PATH="/abusolute/path/to/the/container/bin:$PATH"
 ```
 
-Now you are all set! The Jupyter Server with Dask plugin and be started using the `jupyter_dask_spider_container.bsh` script.
+Now you have reached the exit point of the deployment script and are all set!
+
+## Starting the Jupyter Server and Dask plugin
+The Jupyter Server with Dask plugin and can now be started using the `jupyter_dask_spider_container.bsh` script.
 
 ```shell
 sbatch JupyterDaskOnSLURM/scripts/jupyter_dask_spider_container.bsh
