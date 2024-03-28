@@ -256,7 +256,7 @@ bin/conda-containerize new --prefix ./jupyter_dask ./environment.yaml
 At the end of the installation, the tool will print the path to the executable directory (`bin` directory) of the container. For example:
 
 ```output
-export PATH="/abusolute/path/to/the/container/bin:$PATH" 
+export PATH="/absolute/path/to/the/container/bin:$PATH" 
 ```
 
 ```shell
@@ -269,7 +269,7 @@ Then add the following lines to the `~/.config/dask/config.yml` file, under the 
 
 ```yaml
     job_script_prologue:
-      - 'export PATH="/abusolute/path/to/the/container/bin:$PATH"' # Export environment path to
+      - 'export PATH="/absolute/path/to/the/container/bin:$PATH"' # Export environment path to
     python: python
 ```
 
@@ -292,7 +292,7 @@ Then also configure the SLURM job file `JupyterDaskOnSLURM/scripts/jupyter_dask_
 
 ```shell
 # CHANGE THIS TO THE ABSOLUTE PATH TO THE CONTAINER BIN
-export PATH="/abusolute/path/to/the/container/bin:$PATH"
+export PATH="/absolute/path/to/the/container/bin:$PATH"
 ```
 
 Now you have reached the exit point of the deployment script and are all set!
