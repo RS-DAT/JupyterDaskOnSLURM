@@ -9,7 +9,6 @@ fi
 #clone the hpc_container_wrapper JupyterDaskOnSLurm repositories
 #tis assumes that git access (ssh key) has been configured on spider by the user
 git clone git@github.com:CSCfi/hpc-container-wrapper.git
-#git clone git@github.com:RS-DAT/JupyterDaskOnSLURM.git
 
 #change directory to the hpc-container-wrapper dir
 cd hpc-container-wrapper
