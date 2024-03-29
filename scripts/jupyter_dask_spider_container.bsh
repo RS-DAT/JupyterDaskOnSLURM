@@ -8,7 +8,7 @@
 source ~/.bashrc
 
 # CHANGE THIS TO THE ABSOLUTE PATH TO THE CONTAINER BIN
-export PATH="/abusolute/path/to/the/container/bin:$PATH"
+export PATH="/absolute/path/to/the/container/bin:$PATH"
 
 node=`hostname -s`
 port=`shuf -i 8400-9400 -n 1`
