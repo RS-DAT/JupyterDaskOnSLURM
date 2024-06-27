@@ -6,9 +6,7 @@ if [[ ! ./ -ef ~ ]] ; then
     cd $HOME
 fi
 
-#clone the hpc_container_wrapper JupyterDaskOnSLurm repositories
-#tis assumes that git access (ssh key) has been configured on spider by the user
-#git clone git@github.com:CSCfi/hpc-container-wrapper.git
+#clone the hpc-container-wrapper repository
 git clone https://github.com/CSCfi/hpc-container-wrapper.git
 
 #change directory to the hpc-container-wrapper dir
