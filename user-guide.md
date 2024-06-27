@@ -75,7 +75,7 @@ folder to include all conda/pip packages that are needed to run your proposed
 workflow.
 
 After editing the `environment.yaml` file, installing the components on the
-platform can be done on the platform as:
+platform can be done from your local machine as:
 
 ```shell
 python runJupyterDaskOnSLURM.py --uid <UID> --mode install
@@ -94,7 +94,7 @@ Dask and other libraries), you can use the configuration file provided in
 string with the actual macaroon** (see [this
 guide](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons)
 for information on how to generate it), then copy the file to
-`${HOME/.config/fsspec}`:
+`${HOME/.config/fsspec}` **on the platform**:
 
 ```shell
 mkdir -p ~/.config/fsspec
@@ -107,7 +107,8 @@ package](https://dcachefs.readthedocs.io/en/latest/).
 
 ### Running
 
-You can run Jupyter Lab on the remote server using:
+You can run Jupyter Lab on the remote server by running the following command
+on your local system:
 
 ```shell
 python runJupyterDaskOnSLURM.py --uid <UID> --mode run
@@ -137,7 +138,7 @@ workers will also be killed shortly after (configure this using the
 
 ### Uninstallation on platform
 
-Uninstalling the components on the platform can be done as:
+Uninstalling the components on the platform can be done from your local system as:
 
 ```shell
 python runJupyterDaskOnSLURM.py --uid <UID> --mode uninstall
@@ -299,7 +300,7 @@ To set up the container wrapper, first log in to Spider:
 ssh USER@spider.surf.nl
 ```
 
-Then, clone the `JupyterDaskOnSLURM` repository:
+Then, clone the `JupyterDaskOnSLURM` repository in your home directory:
 
 ```shell
 git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
@@ -323,7 +324,7 @@ running the script).
 
 Now you are all set!
 
-### manual installation on Spider using container
+### Manual installation on Spider using the container wrapper
 
 If you want to manually set up the container wrapper on Spider, follow the steps
 below.
