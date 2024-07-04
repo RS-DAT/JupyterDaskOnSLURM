@@ -54,16 +54,16 @@ and, currently, [decorator](https://github.com/micheles/decorator) as well,
 which can be installed via `pip`:
 
 ```shell
-pip install fabric decorator
+pip install .
 ```
 
 Running the script the first time using the option `--add_platform` queries the
 user for a few infomation about the platform e.g. username and path to the
 private ssh-key, and stores these in a configuration file at
-`.config/platforms/platforms.ini` for later use:
+`JupyterDaskOnSLURM/config/platforms/platforms.ini` for later use:
 
 ```shell
-python runJupyterDaskOnSLURM.py --add_platform
+python src/runJupyterDaskOnSLURM.py --add_platform
 ```
 
 > NOTE: Don't use `~` for entering a path.
@@ -78,7 +78,7 @@ After editing the `environment.yaml` file, installing the components on the
 platform can be done from your local machine as:
 
 ```shell
-python runJupyterDaskOnSLURM.py --uid <UID> --mode install
+python src/runJupyterDaskOnSLURM.py --uid <UID> --mode install
 ```
 
 > NOTE: that installation can take a while and requires user input to complete.
@@ -90,7 +90,8 @@ storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specificatio
 via [the Filesystem Spec
 library](https://filesystem-spec.readthedocs.io/en/latest/) (internally used by
 Dask and other libraries), you can use the configuration file provided in
-`config/fsspec`. Edit `config/fsspec/config.json`, **replacing the `<MACAROON>`
+`JupyterDaskOnSLURM/config/fsspec`. Edit
+`JupyterDaskOnSLURM/config/fsspec/config.json`, **replacing the `<MACAROON>`
 string with the actual macaroon** (see [this
 guide](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons)
 for information on how to generate it), then copy the file to
@@ -98,7 +99,7 @@ for information on how to generate it), then copy the file to
 
 ```shell
 mkdir -p ~/.config/fsspec
-cp ./config/fsspec/config.json ~/.config/fsspec/
+cp ~/JupyterDaskOnSLURM/config/fsspec/config.json ~/.config/fsspec/
 ```
 
 More information on how to read files from the dCache storage are provided in
@@ -111,7 +112,7 @@ You can run Jupyter Lab on the remote server by running the following command
 on your local system:
 
 ```shell
-python runJupyterDaskOnSLURM.py --uid <UID> --mode run
+python src/runJupyterDaskOnSLURM.py --uid <UID> --mode run
 ```
 
 A browser window should open up. **Note that it might take few seconds for the
@@ -141,7 +142,7 @@ workers will also be killed shortly after (configure this using the
 Uninstalling the components on the platform can be done from your local system as:
 
 ```shell
-python runJupyterDaskOnSLURM.py --uid <UID> --mode uninstall
+python src/runJupyterDaskOnSLURM.py --uid <UID> --mode uninstall
 ```
 
 This will remove all associated files and folders. However, mamba will remain
