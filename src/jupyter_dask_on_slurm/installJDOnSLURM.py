@@ -21,9 +21,8 @@ remoteScriptWD  : Path to directory on remote host where job submission scripts 
                   Expected naming convention is 'jupyter_dask_xxx.bsh', where xxx is the name of the platform.
 mamba_URL       : Download URL for mamba installation file
 """
- 
-from fabric import Connection
-from runJupyterDaskOnSLURM import ssh_remote_executor
+
+from . import utils
 import subprocess
 
 config_path = './config/platforms/platforms.ini'
@@ -36,7 +35,7 @@ def check_copy(conn):
     Check if repository has been cloned already on remote host
 
     :param conn: ssh connection object
-    :return folder_exists: Logical on whether the repository exists on remote host 
+    :return folder_exists: Logical on whether the repository exists on remote host
     """
     cmd = f"if test -d JupyterDaskOnSLURM; then echo 'True'; fi"
     folder_exists = False
@@ -53,7 +52,7 @@ def copy_folder(conn, config_inputs):
     """
     cmd = f"scp -i {config_inputs['keypath']} -r ../JupyterDaskOnSLURM {config_inputs['user']}@{config_inputs['host']}:~/. "
     subprocess.run(cmd, shell=True, capture_output=True)
-    
+
     return None
 
 def test_mamba(conn):
@@ -129,7 +128,7 @@ def jpconfig(conn, envname):
 
     :param conn: ssh connection object
     :param envname: Name of the expected environment
-    :return None: 
+    :return None:
     """
     cmd = f'cd {remoteJDD} && mamba activate {envname} && jupyter server --generate-config && jupyter server password && chmod 400 ~/.jupyter/jupyter_server_config.py'
     conn.run(cmd, hide=False)
@@ -166,66 +165,66 @@ def daskconfig(conn, platform):
 
 def install_JD(config_inputs, platform_name, envfile):
     #Copy folder as needed
-    folder_exists = ssh_remote_executor(config_inputs, check_copy)
+    folder_exists = utils.ssh_remote_executor(config_inputs, check_copy)
     if not folder_exists:
         print ('Cloning JupyterDaskonSLURM on remote host...')
-        ssh_remote_executor(config_inputs, copy_folder, config_inputs)
-        folder_exists = ssh_remote_executor(config_inputs, check_copy)
+        utils.ssh_remote_executor(config_inputs, copy_folder, config_inputs)
+        folder_exists = utils.ssh_remote_executor(config_inputs, check_copy)
         if not folder_exists:
             raise ValueError(f'Error cloning repository. Check git credentials or copy manually')
-        
+
     #Install mamba as needed
-    mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
+    mamba_exists = utils.ssh_remote_executor(config_inputs, test_mamba)
     if not mamba_exists:
         print ('Installing mamba on remote host...')
-        ssh_remote_executor(config_inputs, install_mamba)
-        mamba_exists = ssh_remote_executor(config_inputs, test_mamba)
+        utils.ssh_remote_executor(config_inputs, install_mamba)
+        mamba_exists = utils.ssh_remote_executor(config_inputs, test_mamba)
         if not mamba_exists:
             raise ValueError(f'Error installing mamba. Please install manually')
-        
+
     #Create environment
-    env_exists, envname = ssh_remote_executor(config_inputs, test_env, envfile)
+    env_exists, envname = utils.ssh_remote_executor(config_inputs, test_env, envfile)
     if not env_exists:
         print (f'Creating mamba environment from {envfile} on remote host...')
-        ssh_remote_executor(config_inputs, create_env, envfile)
-        env_exists = ssh_remote_executor(config_inputs, test_env, envfile)
+        utils.ssh_remote_executor(config_inputs, create_env, envfile)
+        env_exists = utils.ssh_remote_executor(config_inputs, test_env, envfile)
         if not env_exists:
             raise ValueError(f'Error creating environment. Please create manually')
-        
+
     #Configure Jupyter
-    jpconfig_exists = ssh_remote_executor(config_inputs, check_jpconfig)
+    jpconfig_exists = utils.ssh_remote_executor(config_inputs, check_jpconfig)
     if not jpconfig_exists:
         print ('Configuring Jupyter on remote host...')
-        ssh_remote_executor(config_inputs, jpconfig, envname)
-        jpconfig_exists = ssh_remote_executor(config_inputs, check_jpconfig)
+        utils.ssh_remote_executor(config_inputs, jpconfig, envname)
+        jpconfig_exists = utils.ssh_remote_executor(config_inputs, check_jpconfig)
         if not jpconfig_exists:
-            raise ValueError(f'Error configuring jupyter. Please configure manually')    
-    
+            raise ValueError(f'Error configuring jupyter. Please configure manually')
+
     #Configure Dask
-    daskconfig_exists = ssh_remote_executor(config_inputs, check_daskconfig)
+    daskconfig_exists = utils.ssh_remote_executor(config_inputs, check_daskconfig)
     if not daskconfig_exists:
         print ('Configuring Dask on remote host...')
-        ssh_remote_executor(config_inputs, daskconfig, platform_name)
-        daskconfig_exists = ssh_remote_executor(config_inputs, check_daskconfig)
+        utils.ssh_remote_executor(config_inputs, daskconfig, platform_name)
+        daskconfig_exists = utils.ssh_remote_executor(config_inputs, check_daskconfig)
         if not daskconfig_exists:
-            raise ValueError(f'Error configuring dask. Please configure manually') 
-        
+            raise ValueError(f'Error configuring dask. Please configure manually')
+
     #Configure Dcache
     dcache_config = input ('If you want to use dCache, it needs to be manually configured. Has dCache been configured? (Y/n): ') or 'Y'
     if dcache_config in {'Y', 'y'}:
         print ("dCache configured by User")
-    elif dcache_config in {'N', 'n'}: 
+    elif dcache_config in {'N', 'n'}:
         print ("""
 Please configure dCache as per the instructions in https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/user-guide.md.
-Please note that the deployable analysis environment does not require dCache to run scalable analyses. 
-            """)  
+Please note that the deployable analysis environment does not require dCache to run scalable analyses.
+            """)
     else:
         raise ValueError('Chosen option invalid. Please retry.')
-    
+
     install = False
     if (folder_exists and mamba_exists and env_exists and jpconfig_exists and daskconfig_exists):
         install = True
-    
+
     return install
 
 def remove_env(conn, envname):
@@ -269,17 +268,17 @@ def remove_folders(conn):
 
 def uninstall_JD(config_inputs, platform_name, envfile = 'environment.yaml'):
     print ('Uninstalling all components...')
-    folder_exists = ssh_remote_executor(config_inputs, check_clone)
+    folder_exists = utils.ssh_remote_executor(config_inputs, check_clone)
     if (folder_exists):
-        _, envname = ssh_remote_executor(config_inputs, test_env, envfile)
+        _, envname = utils.ssh_remote_executor(config_inputs, test_env, envfile)
         print ('Removing environment...')
-        ssh_remote_executor(config_inputs, remove_env, envname)
-   
+        utils.ssh_remote_executor(config_inputs, remove_env, envname)
+
     print ('Removing JupyterDaskOnSLURM...')
-    ssh_remote_executor(config_inputs, remove_folders)
+    utils.ssh_remote_executor(config_inputs, remove_folders)
 
     print ('Removing config files...')
-    ssh_remote_executor(config_inputs, remove_files)
-    
+    utils.ssh_remote_executor(config_inputs, remove_files)
+
     uninstall = True
     return uninstall

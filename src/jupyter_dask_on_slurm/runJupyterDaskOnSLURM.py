@@ -54,9 +54,9 @@ import time
 import webbrowser
 import getpass
 
-from fabric import Connection
 from pathlib import Path
-import installJDOnSLURM     #Functions to install or uninstall JDOnSLURM
+from . import utils
+from . import installJDOnSLURM
 
 # get the parent pat of the current file
 parent_path = Path(__file__).resolve().parents[2]
@@ -222,26 +222,6 @@ def get_config(args):
         return add_platform(oneoff=True)
     else:
         return load_platform_config(args.uid)
-
-
-def ssh_remote_executor(config_inputs, func, *inargs):
-    """
-    Create ssh connection to remote host and execute logic of function (func) using this connection.
-
-    :param config_inputs: configuration input parameters for ssh connection
-    :param func: function object to execute. Accepts only positional arguments
-    :param *inargs: positional arguments to be passed to func
-    """
-
-    if config_inputs['key_pass'] == 'False':
-        with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath']}) as conn:
-            result = func(conn, *inargs)
-    elif config_inputs['key_pass'] == 'True':
-        with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath'], 'passphrase':config_inputs['passphrase']}) as conn:
-            result = func(conn, *inargs)
-
-
-    return result
 
 
 def submit_scheduler(conn, args, platform):
@@ -453,12 +433,12 @@ def main():
 
     if  (args.mode == None and args.one_off):
         # submit batch job with scheduler
-        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        outfilename = utils.ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = utils.ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
         if forwardconfig is None:
             print('submission appears to have failed.')
         else:
-            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+            _ = utils.ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
     elif (args.mode == 'install'):
         # Check and install on remote as needed
@@ -485,12 +465,12 @@ def main():
 
     elif (args.mode == 'run'):
         # submit batch job with scheduler
-        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        outfilename = utils.ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = utils.ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
         if forwardconfig is None:
             print('submission appears to have failed.')
         else:
-            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+            _ = utils.ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
     else:
         raise argparse.ArgumentError("Valid arguments with -p are ['install', 'uninstall', 'run'] or -oo for one-off connection")
