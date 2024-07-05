@@ -33,5 +33,3 @@ dev = [
     "pycodestyle",
 ]
 
-[tool.setuptools]
-packages = ["src"]
