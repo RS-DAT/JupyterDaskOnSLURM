@@ -58,9 +58,7 @@ from pathlib import Path
 from . import utils
 from . import installJDOnSLURM
 
-# get the parent pat of the current file
-parent_path = Path(__file__).resolve().parents[2]
-config_path = f'{parent_path}/config/platforms/platforms.ini'
+config_path = Path.home() / ".config/platforms/platforms.ini"
 
 remoteWD = '~'
 remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'  # don't change this path
