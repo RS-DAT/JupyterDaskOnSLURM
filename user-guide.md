@@ -38,32 +38,34 @@ and
 
 ## Local Set-up
 
-This repository includes [a Python script](./scripts/runJupyterDaskOnSLURM.py)
+This repository includes [a Python package](./pyproject.toml)
 to install the components remotely on a SURF platform (Snellius/Spider/etc.),
 and to start Jupyter and Dask services on that platform from a local machine.
 
-**On your local machine**, download the script by cloning this repository:
+**On your local machine**, download the config file `platforms.ini` in a folder
+`~/.config/platforms`:
 
 ```shell
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
-cd JupyterDaskOnSLURM
+wget -P ~/.config/platforms https://raw.githubusercontent.com/RS-DAT/JupyterDaskOnSLURM/main/config/platforms/platforms.ini
 ```
 
-The script requires Python 3 and the [Fabric library](https://www.fabfile.org)
-and, currently, [decorator](https://github.com/micheles/decorator) as well,
-which can be installed via `pip`:
+> NOTE: If the directory `~/.config/platforms` does not exist, `wget -P` will create it.
+
+Then install the package `jupyter-dask-on-slurm` via `pip`:
+
+<!-- TODO: by default it uses the main branch. Add release tag to the installation command -->
 
 ```shell
-pip install .
+pip install -U git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git
 ```
 
 Running the script the first time using the option `--add_platform` queries the
 user for a few infomation about the platform e.g. username and path to the
 private ssh-key, and stores these in a configuration file at
-`JupyterDaskOnSLURM/config/platforms/platforms.ini` for later use:
+`~/.config/platforms/platforms.ini` for later use:
 
 ```shell
-python src/runJupyterDaskOnSLURM.py --add_platform
+jupyter-dask-on-slurm --add_platform
 ```
 
 > NOTE: Don't use `~` for entering a path.
@@ -78,7 +80,7 @@ After editing the `environment.yaml` file, installing the components on the
 platform can be done from your local machine as:
 
 ```shell
-python src/runJupyterDaskOnSLURM.py --uid <UID> --mode install
+jupyter-dask-on-slurm --uid <UID> --mode install
 ```
 
 > NOTE: that installation can take a while and requires user input to complete.
@@ -90,16 +92,15 @@ storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specificatio
 via [the Filesystem Spec
 library](https://filesystem-spec.readthedocs.io/en/latest/) (internally used by
 Dask and other libraries), you can use the configuration file provided in
-`JupyterDaskOnSLURM/config/fsspec`. Edit
-`JupyterDaskOnSLURM/config/fsspec/config.json`, **replacing the `<MACAROON>`
-string with the actual macaroon** (see [this
+`JupyterDaskOnSLURM/config/fsspec/config.json`.
+
+**On the platform** download the file and edit it,
+**replacing the `<MACAROON>` string with the actual macaroon** (see [this
 guide](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons)
-for information on how to generate it), then copy the file to
-`${HOME/.config/fsspec}` **on the platform**:
+for information on how to generate it):
 
 ```shell
-mkdir -p ~/.config/fsspec
-cp ~/JupyterDaskOnSLURM/config/fsspec/config.json ~/.config/fsspec/
+wget -P ~/.config/fsspec https://raw.githubusercontent.com/RS-DAT/JupyterDaskOnSLURM/main/config/fsspec/config.json
 ```
 
 More information on how to read files from the dCache storage are provided in
@@ -112,7 +113,7 @@ You can run Jupyter Lab on the remote server by running the following command
 on your local system:
 
 ```shell
-python src/runJupyterDaskOnSLURM.py --uid <UID> --mode run
+jupyter-dask-on-slurm --uid <UID> --mode run
 ```
 
 A browser window should open up. **Note that it might take few seconds for the
@@ -142,7 +143,7 @@ workers will also be killed shortly after (configure this using the
 Uninstalling the components on the platform can be done from your local system as:
 
 ```shell
-python src/runJupyterDaskOnSLURM.py --uid <UID> --mode uninstall
+jupyter-dask-on-slurm --uid <UID> --mode uninstall
 ```
 
 This will remove all associated files and folders. However, mamba will remain
