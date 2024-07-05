@@ -33,3 +33,6 @@ dev = [
     "pycodestyle",
 ]
 
+[project.scripts]
+jupyter-dask-on-slurm = "jupyter_dask_on_slurm.runJupyterDaskOnSLURM:main"
+
