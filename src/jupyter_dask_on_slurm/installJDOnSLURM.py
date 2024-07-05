@@ -11,8 +11,6 @@ The script can most easily be invoked through 'python runJupyterDaskOnSLURM.py -
 Paths to the working directory and scripts on the remote host, as well as to the local connection configuration file can be specified below.
 Configurable paths are:
 
-config_path     : path to config file that is created/updated. default is in local installation of JupyterDaskOnSLURM
-                  repository. Can be adapted to user preferences
 remoteWD        : Working directory from which to submit batch job on remote host
 remoteJDD       : Clone directory of JupyterDaskOnSLURM
 remoteScriptWD  : Path to directory on remote host where job submission scripts are located
@@ -25,7 +23,6 @@ mamba_URL       : Download URL for mamba installation file
 from . import utils
 import subprocess
 
-config_path = './config/platforms/platforms.ini'
 remoteWD = '~'
 remoteJDD = '~/JupyterDaskOnSLURM'
 mamba_URL = 'https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh'
