@@ -42,6 +42,15 @@ This repository includes [a Python package](./pyproject.toml)
 to install the components remotely on a SURF platform (Snellius/Spider/etc.),
 and to start Jupyter and Dask services on that platform from a local machine.
 
+**On your local machine**, get a copy of this repository:
+
+```shell
+git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
+cd JupyterDaskOnSLURM
+```
+
+> NOTE: This is needed because this folder will be copied to remote platform.
+
 **On your local machine**, download the config file `platforms.ini` in a folder
 `~/.config/platforms`:
 
