@@ -59,7 +59,7 @@ from pathlib import Path
 import installJDOnSLURM     #Functions to install or uninstall JDOnSLURM
 
 # get the parent pat of the current file
-parent_path = Path(__file__).resolve().parent
+parent_path = Path(__file__).resolve().parents[2]
 config_path = f'{parent_path}/config/platforms/platforms.ini'
 
 remoteWD = '~'
