@@ -11,18 +11,18 @@ The script can most easily be invoked as 'python runJupyterDaskOnSLURM.py --<you
 When invoking the script one of the following command line arguments MUST be provided:
 --add_platform (-a) : The script will query the user for login and connection information for the platform.
                       This information is then saved in ./config/platforms/platforms.ini for future use
---one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+--one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information
                               entered is NOT saved. Note that installation on remote is to be handled manually here.
---uid (-u)          : Takes the UID of the added platform as argument    
-                      The script will look for the login and connection information for the 
+--uid (-u)          : Takes the UID of the added platform as argument
+                      The script will look for the login and connection information for the
                       UID specified by the string passed and will use this, if successful.
 --mode (-m)         : One of the following arguments can be passed**:
                         install - to install all components on remote host
                         run - to run JupyterDaskOnSLURM on remote host
                         uninstall - to remove all components on remote host*
 
-* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
-** - mode does not work in combination with the --one-off argument 
+* - mamba will be installed if not present through the install command but will not be uninstalled through uninstall.
+** - mode does not work in combination with the --one-off argument
 
 Optionally the user can pass the local port to be used in the Jupyter instance from the remote host. This can be done using
 
@@ -44,23 +44,24 @@ remoteScriptWD  : Path to directory on remote host where job submission scripts 
                   ATTENTION! When adding a job script on a plattform other than spider/snellius @SURF the user MUST
                   create a job script for the platform (this can be done by using the existing scripts as templates).
                   Expected naming convention is 'jupyter_dask_xxx.bsh', where xxx is the name of the platform.
-""" 
+"""
 
 
 import argparse
 import configparser
 import math
-import os
 import time
 import webbrowser
 import getpass
 
-from fabric import Connection
-import installJDOnSLURM     #Functions to install or uninstall JDOnSLURM
+from pathlib import Path
+from . import utils
+from . import installJDOnSLURM
 
-config_path = './config/platforms/platforms.ini'
+config_path = Path.home() / ".config/platforms/platforms.ini"
+
 remoteWD = '~'
-remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'
+remoteScriptD = '~/JupyterDaskOnSLURM/scripts/'  # don't change this path
 
 
 def parse_cla():
@@ -71,24 +72,24 @@ def parse_cla():
         mutually exclusive, one required:
             --add_platform (-a) : The script will query the user for login and connection information for the platform.
                                 This information is then saved in ./config/platforms/platforms.ini for future use
-            --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information  
+            --one_off (-oo)     : Adds platform as in add-platform and runs on remote host, except that the information
                                         entered is NOT saved. Note that installation on remote is to be handled manually here.
-            --uid (-u)          : Takes the UID of the added platform as argument    
-                                The script will look for the login and connection information for the 
+            --uid (-u)          : Takes the UID of the added platform as argument
+                                The script will look for the login and connection information for the
                                 UID specified by the string passed and will use this, if successful.
             --mode (-m)         : One of the following arguments can be passed**:
                                     install - to install all components on remote host
                                     run - to run JupyterDaskOnSLURM on remote host
                                     uninstall - to remove all components on remote host*
 
-    * - mamba will be installed if not present through the install command but will not be uninstalled through uninstall. 
-    ** - mode does not work in combination with the --one-off argument 
+    * - mamba will be installed if not present through the install command but will not be uninstalled through uninstall.
+    ** - mode does not work in combination with the --one-off argument
 
         optional:
         --local_port (-lp)  : The script will set up port forwarding to the specified port of the localhost.
                               If not specified port 8889 is used
         --wait_time (-wt)   : The script will wait for SLURM to successfully schedule the jupyter server instance on
-                              the remote host for the specified number of seconds (integer) checking every 2 seconds   
+                              the remote host for the specified number of seconds (integer) checking every 2 seconds
 
     :return args: ArgumentParser return object containing command line arguments
     """
@@ -103,7 +104,7 @@ def parse_cla():
     parser.add_argument("--mode", "-m", metavar=('MODE'), help="Choose MODE='install'/'run'/'uninstall' to install, run, or \
                                             uninstall package on remote host respectively", type=str)
     args = parser.parse_args()
-    return args 
+    return args
 
 
 def get_verified_input(prompt):
@@ -112,7 +113,7 @@ def get_verified_input(prompt):
     Register input, display input and ask for confirmation of correctness. Only proceed upon confirmation.
 
     :param prompt: str; prompt to display to user requesting input
-    :return userinput: str; user supplied input  
+    :return userinput: str; user supplied input
     """
 
     unverified = True
@@ -128,7 +129,7 @@ def get_secret_input(prompt):
     """
     Query user for secret inputs
     """
-    unverified = True 
+    unverified = True
     while unverified == True:
         userinput = getpass.getpass(prompt+'\n')
         print('please re-enter for verification \n')
@@ -167,16 +168,16 @@ def add_platform(oneoff=False):
     if key_passphrase in ['Yes','yes','YES','Y','y']:
         key_pass_answer = 'True'
 
-    config_inputs = {'platform':platform_name, 'host':platform_host, 'user':user_name, 'keypath':key_path, 'key_pass':key_pass_answer} 
+    config_inputs = {'platform':platform_name, 'host':platform_host, 'user':user_name, 'keypath':key_path, 'key_pass':key_pass_answer}
 
     if oneoff:
-        pass 
+        pass
     else:
         config = configparser.ConfigParser()
         config[uid]=config_inputs
         with open(config_path, 'a') as cf:
             config.write(cf)
-    return config_inputs, platform_name	
+    return config_inputs, platform_name
 
 
 def load_platform_config(uid):
@@ -202,7 +203,7 @@ def load_platform_config(uid):
 def get_config(args):
     """
     Retrieve configuration depending on user selection in command line arguments. The arguments specificying
-    platform input and configuration are mutually exclusive (see documentation above). Wrapper around config 
+    platform input and configuration are mutually exclusive (see documentation above). Wrapper around config
     retrieval functions.
 
     :param args: ArgumentParser return object containing command line arguments
@@ -219,26 +220,6 @@ def get_config(args):
         return add_platform(oneoff=True)
     else:
         return load_platform_config(args.uid)
-
-
-def ssh_remote_executor(config_inputs, func, *inargs):
-    """
-    Create ssh connection to remote host and execute logic of function (func) using this connection.
-
-    :param config_inputs: configuration input parameters for ssh connection
-    :param func: function object to execute. Accepts only positional arguments
-    :param *inargs: positional arguments to be passed to func 
-    """
-
-    if config_inputs['key_pass'] == 'False':
-        with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath']}) as conn:
-            result = func(conn, *inargs)
-    elif config_inputs['key_pass'] == 'True':
-        with Connection(host=config_inputs['host'],user=config_inputs['user'],connect_kwargs={'key_filename':config_inputs['keypath'], 'passphrase':config_inputs['passphrase']}) as conn:
-            result = func(conn, *inargs)
-            
-
-    return result
 
 
 def submit_scheduler(conn, args, platform):
@@ -301,7 +282,7 @@ def check_for_SLURM(conn,outfilename,args):
     :param conn: ssh connection object
     :param outfilename: name of file to check for
     :param args: ArgumentParser return object containing command line arguments. Included for optional specification of time to
-                 wait for successful scheduling (default 40s) 
+                 wait for successful scheduling (default 40s)
     """
 
     if args.wait_time is not None:
@@ -328,7 +309,7 @@ def check_for_SLURM(conn,outfilename,args):
             else:
                 i+= 1
                 print(f"SLURM outputfile {outfilename} was not found after {wait_time} seconds. Aborting")
-    return file_present 
+    return file_present
 
 
 def check_for_node_info(conn, outfilename):
@@ -368,14 +349,14 @@ def retrieve_node_info(conn,outfilename):
     portsnodes = result.stdout.rstrip()
     node = portsnodes.split(' ')[0].split(':')[1]
     lp = portsnodes.split(' ')[0].split(':')[0]
-    remoteport = portsnodes.split(' ')[0].split(':')[2] 
+    remoteport = portsnodes.split(' ')[0].split(':')[2]
     return {"fwd_string":portsnodes, "localport":lp, "node":node, "remoteport":remoteport}
 
 
 def check_for_server(conn, outfilename):
     cmd = f"cd {remoteWD} && cat {outfilename} | grep 'is running at' - || echo 'server not yet available' "
     server_running = False
-    empty = True 
+    empty = True
     count = 0
     while empty:
         if count <= 300:
@@ -413,7 +394,7 @@ def forward_port_and_launch_local(conn,forwardconfig):
     the web browser.
 
     :param conn: ssh connection object
-    :param forwardconfig: dictionary with information of remote host node and ports 
+    :param forwardconfig: dictionary with information of remote host node and ports
     """
 
     remotehost=forwardconfig["node"]
@@ -447,15 +428,15 @@ def main():
     if config_inputs['key_pass'] == 'True':
         key_pass_val = get_secret_input('Please supply passphrase for ssh key:')
         config_inputs['passphrase']=key_pass_val
-    
+
     if  (args.mode == None and args.one_off):
         # submit batch job with scheduler
-        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        outfilename = utils.ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = utils.ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
         if forwardconfig is None:
             print('submission appears to have failed.')
         else:
-            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+            _ = utils.ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
 
     elif (args.mode == 'install'):
         # Check and install on remote as needed
@@ -468,7 +449,7 @@ def main():
             None
         else:
             raise ValueError('Chosen option invalid. Please retry.')
-    
+
     elif (args.mode == 'uninstall'):
         user_uninstall = input('Do you want to uninstall all components on remote host? (Y/n): ') or 'Y'
         if user_uninstall in {'Y', 'y'}:
@@ -482,13 +463,13 @@ def main():
 
     elif (args.mode == 'run'):
         # submit batch job with scheduler
-        outfilename = ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
-        forwardconfig = ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
+        outfilename = utils.ssh_remote_executor(config_inputs, submit_scheduler, args, platform_name)
+        forwardconfig = utils.ssh_remote_executor(config_inputs, check_and_retrieve_SLURM_info, outfilename, args)
         if forwardconfig is None:
             print('submission appears to have failed.')
         else:
-            _ = ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
-    
+            _ = utils.ssh_remote_executor(config_inputs,forward_port_and_launch_local, forwardconfig)
+
     else:
         raise argparse.ArgumentError("Valid arguments with -p are ['install', 'uninstall', 'run'] or -oo for one-off connection")
 
