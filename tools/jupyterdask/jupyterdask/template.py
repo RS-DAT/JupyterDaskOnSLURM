@@ -9,7 +9,7 @@ def setup_job_script(
         host: str,
         template: str | None = None,
         python: str = "python",
-        log_dir: str = "~/.jupyterdask",
+        log_dir: str = ".jupyterdask",
 ) -> str:
     """
     Setup the job script to start Jupyter and Dask on the remote cluster.

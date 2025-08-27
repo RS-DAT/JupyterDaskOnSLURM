@@ -22,7 +22,7 @@ def submit_and_connect(
         identity_file: str | None = None,
         port: int = 8888,
         timeout: int = 60,
-        log_dir: str = "~/.jupyterdask",
+        log_dir: str = ".jupyterdask",
 ) -> None:
     """
     Start Jupyter on the remote cluster and connect to the server.
@@ -52,7 +52,7 @@ def _get_connect_kwargs(identity_file: str | None) -> dict[str, str | None]:
     return {"key_filename": identity_file} if identity_file is not None else None
 
 
-def _setup_log_dir(connection: Connection, log_dir: str = "~/.jupyterdask") -> None:
+def _setup_log_dir(connection: Connection, log_dir: str = ".jupyterdask") -> None:
     connection.run(f"mkdir -p '{log_dir}'")
 
 
@@ -60,7 +60,7 @@ def _setup_log_dir(connection: Connection, log_dir: str = "~/.jupyterdask") -> N
 def _running_job(
         connection: Connection,
         job_script: str,
-        log_dir: str = "~/.jupyterdask",
+        log_dir: str = ".jupyterdask",
         timeout: int = 60
 ) -> Generator[int]:
     job_id = _submit_job(connection, job_script, log_dir=log_dir)
@@ -74,7 +74,7 @@ def _running_job(
 def _submit_job(
         connection: Connection,
         job_script: str,
-        log_dir: str = "~/.jupyterdask"
+        log_dir: str = ".jupyterdask"
 ) -> int:
     job_name = f"jupyter-{TIMESTAMP}"
     remote_path = f"{log_dir}/{job_name}.bsh"
@@ -88,7 +88,7 @@ def _submit_job(
 def _wait_for_job_to_start(
         connection: Connection,
         job_id: str,
-        log_dir: str = "~/.jupyterdask",
+        log_dir: str = ".jupyterdask",
         timeout: int = 60,
 ):
     stdout_path = _get_stdout_path(job_id, log_dir=log_dir)
@@ -104,7 +104,7 @@ def _cancel_job(connection: Connection, job_id: int) -> None:
     connection.run(f"scancel {job_id}")
 
 
-def _get_stdout_path(job_id: int, log_dir: str = "~/.jupyterdask") -> str:
+def _get_stdout_path(job_id: int, log_dir: str = ".jupyterdask") -> str:
     return f"{log_dir}/jupyter-{TIMESTAMP}-{job_id}.out"
 
 
@@ -116,7 +116,7 @@ def _remote_file_exists(connection: Connection, path: str) -> bool:
 def _retrieve_job_info(
         connection: Connection,
         job_id: int,
-        log_dir: str = "~/.jupyterdask",
+        log_dir: str = ".jupyterdask",
         timeout: int = 120,
 ) -> dict[str, Any]:
     stdout_path = _get_stdout_path(job_id, log_dir=log_dir)

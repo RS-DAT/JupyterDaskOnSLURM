@@ -57,7 +57,7 @@ def parse_args() -> dict[str, Any]:
         "--log-dir",
         help="path where to save job scripts and log files on the remote cluster.",
         type=str,
-        default="~/.jupyterdask",
+        default=".jupyterdask",
     )
     parser.add_argument(
         "--run",

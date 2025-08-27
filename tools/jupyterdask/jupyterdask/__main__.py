@@ -10,7 +10,7 @@ def main(
         timeout: int = 120,
         template: str | None = None,
         python: str = "python",
-        log_dir: str = "~/.jupyterdask",
+        log_dir: str = ".jupyterdask",
         run: bool = False,
 ) -> None:
     """
