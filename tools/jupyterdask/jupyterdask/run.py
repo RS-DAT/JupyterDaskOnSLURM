@@ -9,6 +9,7 @@ from typing import Any, ContextManager
 from urllib.parse import urlparse, parse_qs
 
 from fabric import Connection
+from invoke.exceptions import UnexpectedExit
 
 
 logger = logging.getLogger(__file__)
@@ -37,14 +38,14 @@ def submit_and_connect(
     connect_kwargs = _get_connect_kwargs(identity_file)
     with Connection(host=host, connect_kwargs=connect_kwargs, forward_agent=True) as conn:
         _setup_log_dir(conn, log_dir)
-        with _running_job(conn, job_script, log_dir=log_dir, timeout=timeout) as job:
-            job_info = _retrieve_job_info(conn, job, log_dir=log_dir)
+        with _start_jupyter(conn, job_script, log_dir=log_dir, timeout=timeout) as url:
+            url_info = _parse_url(url)
             _forward_port_and_open_browser(
                 conn,
-                remote_host=job_info["remote_host"],
-                remote_port=job_info["remote_port"],
+                remote_host=url_info["hostname"],
+                remote_port=url_info["port"],
                 local_port=port,
-                token=job_info["token"],
+                token=url_info["token"],
             )
 
 
@@ -53,20 +54,21 @@ def _get_connect_kwargs(identity_file: str | None) -> dict[str, str | None]:
 
 
 def _setup_log_dir(connection: Connection, log_dir: str = ".jupyterdask") -> None:
-    connection.run(f"mkdir -p '{log_dir}'")
+    connection.run(f"mkdir -p '{log_dir}'", hide=True)
 
 
 @contextmanager
-def _running_job(
+def _start_jupyter(
         connection: Connection,
         job_script: str,
         log_dir: str = ".jupyterdask",
         timeout: int = 60
-) -> ContextManager[int]:
+) -> ContextManager[str]:
     job_id = _submit_job(connection, job_script, log_dir=log_dir)
-    _wait_for_job_to_start(connection, job_id, log_dir=log_dir, timeout=timeout)
     try:
-        yield job_id
+        log_file = _get_log_file(job_id, log_dir=log_dir)
+        _wait_for_jupyter_to_start(connection, job_id, log_file, timeout=timeout)
+        yield _get_jupyter_url(connection, log_file)
     finally:
         _cancel_job(connection, job_id)
 
@@ -79,60 +81,69 @@ def _submit_job(
     job_name = f"jupyter-{TIMESTAMP}"
     remote_path = f"{log_dir}/{job_name}.bsh"
     connection.put(io.StringIO(job_script), remote_path)
-    res = connection.run(f"sbatch --job-name {job_name} {remote_path}")
+    res = connection.run(f"sbatch --job-name {job_name} {remote_path}", hide=True)
     # Parse stdout of the form: "Submitted batch job <JOB_ID>"
     job_id = int(res.stdout.split()[-1])
     return job_id
 
 
-def _wait_for_job_to_start(
+def _wait_for_jupyter_to_start(
         connection: Connection,
         job_id: str,
-        log_dir: str = ".jupyterdask",
+        log_file: str,
         timeout: int = 60,
 ):
-    stdout_path = _get_stdout_path(job_id, log_dir=log_dir)
     start_time = time.time()
     while time.time() - start_time < timeout:
-        if _remote_file_exists(connection, stdout_path):
-            return
-        time.sleep(2)
-    raise TimeoutError(f"Job {job_id} failed to start.")
+        if _job_is_active(connection, job_id):
+            if _jupyter_is_running(connection, log_file):
+                return
+        else:
+            raise RuntimeError(f"Job {job_id} failed.")
+        time.sleep(5)
+    raise TimeoutError(f"Failed to start Jupyter in job {job_id}.")
 
 
 def _cancel_job(connection: Connection, job_id: int) -> None:
-    connection.run(f"scancel {job_id}")
+    connection.run(f"scancel {job_id}", warn=True, hide=True)
 
 
-def _get_stdout_path(job_id: int, log_dir: str = ".jupyterdask") -> str:
+def _get_log_file(job_id: int, log_dir: str = ".jupyterdask") -> str:
     return f"{log_dir}/jupyter-{TIMESTAMP}-{job_id}.out"
 
 
-def _remote_file_exists(connection: Connection, path: str) -> bool:
-    res = connection.run(f"test -f {path} && echo True || echo False")
-    return bool(res.stdout)
+def _job_is_active(connection: Connection, job_id: int):
+    res = connection.run(f"squeue -j {job_id} --format %T", warn=True, hide=True)
+    # If the job is active, squeue will return "STATE\n<SOME_STATE>\n"
+    is_active = len(res.stdout.split()) == 2
+    return (res.exited == 0) and is_active
 
 
-def _retrieve_job_info(
-        connection: Connection,
-        job_id: int,
-        log_dir: str = ".jupyterdask",
-        timeout: int = 120,
-) -> dict[str, Any]:
-    stdout_path = _get_stdout_path(job_id, log_dir=log_dir)
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        res = connection.run(f"grep -A 1 'is running at:' {stdout_path} | grep -oE 'https?://.*'")
-        if res.stdout:
-            return _parse_url(res.stdout)
-        time.sleep(2)
-    raise TimeoutError("Jupyter failed to start.")
+def _jupyter_is_running(connection: Connection, log_file: str):
+    if not _file_exists(connection, log_file):
+        return False
+    try:
+        _ = _get_jupyter_url(connection, log_file)
+    except UnexpectedExit:
+        return False
+    return True
+
+
+def _file_exists(connection: Connection, path: str) -> bool:
+    res = connection.run(f"test -f {path}", warn=True, hide=True)
+    return res.exited == 0
+
+
+def _get_jupyter_url(connection: Connection, path: str) -> str:
+    res = connection.run(f"grep -A 1 'is running at:' {path} | grep -oE 'https?://.*'", hide=True)
+    return res.stdout
 
 
 def _parse_url(url: str) -> dict[str, Any]:
     parsed = urlparse(url)
+    hostname, _ = parsed.hostname.split(".", 1)  # Only use short hostname
     token = parse_qs(parsed.query).get("token", [None])[0]
-    return {"hostname": parsed.hostname, "port": parsed.port, "token": token}
+    return {"hostname": hostname, "port": parsed.port, "token": token}
 
 
 def _forward_port_and_open_browser(
@@ -149,6 +160,7 @@ def _forward_port_and_open_browser(
     ):
         time.sleep(1)
         _open_browser(port=local_port, token=token)
+        _wait()
 
 
 def _open_browser(port: int = 8888, token: str | None = None) -> None:
@@ -165,3 +177,8 @@ def _open_browser(port: int = 8888, token: str | None = None) -> None:
         logger.info("Web browser launched.")
     except webbrowser.Error:
         logger.info("Failed to open web browser.")
+
+
+def _wait():
+    while True:
+        input()

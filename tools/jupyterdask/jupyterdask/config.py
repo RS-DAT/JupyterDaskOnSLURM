@@ -7,7 +7,6 @@ import fabric
 class ClusterConfig:
     """ Remote cluster configuration. """
     cores: int
-    memory: str
     walltime: str
     partition: str
     worker_processes: int
@@ -21,7 +20,6 @@ class ClusterConfig:
 DEFAULT_CONFIGS = {
     "spider": ClusterConfig(
         cores=1,
-        memory="8GiB",
         walltime="01:00:00",
         partition="normal",
         worker_processes=1,
@@ -33,19 +31,17 @@ DEFAULT_CONFIGS = {
     ),
     "snellius": ClusterConfig(
         cores=16,
-        memory="28GiB",
         walltime="01:00:00",
-        partition="thin",
+        partition="rome",
         worker_processes=1,
         worker_cores=16,
         worker_memory="28GiB",
         worker_walltime="01:00:00",
-        worker_partition="thin",
+        worker_partition="rome",
         worker_local_directory=r"\$TMPDIR",
     ),
     "delftblue": ClusterConfig(
         cores=1,
-        memory="4G",
         walltime="01:00:00",
         partition="compute",
         worker_processes=1,
