@@ -5,7 +5,7 @@ import time
 import webbrowser
 
 from contextlib import contextmanager
-from typing import Any, Generator
+from typing import Any, ContextManager
 from urllib.parse import urlparse, parse_qs
 
 from fabric import Connection
@@ -62,7 +62,7 @@ def _running_job(
         job_script: str,
         log_dir: str = ".jupyterdask",
         timeout: int = 60
-) -> Generator[int]:
+) -> ContextManager[int]:
     job_id = _submit_job(connection, job_script, log_dir=log_dir)
     _wait_for_job_to_start(connection, job_id, log_dir=log_dir, timeout=timeout)
     try:
