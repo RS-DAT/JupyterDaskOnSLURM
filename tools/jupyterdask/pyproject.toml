@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jupyterdask"
+version = "0.3.0"
+requires-python = ">=3.10"
+dependencies = [
+    "decorator",
+    "fabric",
+    "invoke",
+    "Jinja2",
+]
+description = "setup and run a Jupyter server and a Dask cluster on a SLURM system"
+readme = "README.md"
+license = {text = "Apache 2.0"}
+classifiers=[
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+]
+
+[project.urls]
+repository = "https://github.com/RS-DAT/JupyterDaskOnSLURM"
+documentation = "https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/README.md"
+
+[project.scripts]
+jupyterdask = "jupyterdask.__main__:__main__"
+
+[tool.setuptools.package-data]
+"jupyterdask.templates" = ["template.slurm"]
