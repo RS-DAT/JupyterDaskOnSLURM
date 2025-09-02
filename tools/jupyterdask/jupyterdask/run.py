@@ -170,7 +170,7 @@ def _open_browser(port: int = 8888, token: str | None = None) -> None:
     url = f"http://localhost:{port}"
     if token is not None:
         url = f"{url}/?token={token}"
-    logger.info("JupyterLab URL: %s", url)
+    print("JupyterLab URL: %s", url)
     try:
         controller = webbrowser.get()
         controller.open(url)
