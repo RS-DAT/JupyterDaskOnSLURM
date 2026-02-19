@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jupyter-dask-on-slurm"
+version = "0.2.1"
+requires-python = ">=3.10"
+dependencies = [
+    "decorator",
+    "fabric",
+]
+description = "setup and run a Jupyter server and a Dask cluster on a SLURM system"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers=[
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+]
+
+[project.urls]
+repository = "https://github.com/RS-DAT/JupyterDaskOnSLURM"
+documentation = "https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/README.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pycodestyle",
+]
+
+[project.scripts]
+jupyter-dask-on-slurm = "jupyter_dask_on_slurm.runJupyterDaskOnSLURM:main"
+
