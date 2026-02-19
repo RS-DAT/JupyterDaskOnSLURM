@@ -28,13 +28,13 @@ We provide [a Python command-line tool](./tools/jupyterdask/) that allows one to
 
 ### Installation
 
-The `jupyterdask` tool should be installed **on your local machine**. It can be installed with `pip` as:
+The `jupyterdask` tool should only be installed **on your local machine**. It can be installed with `pip` as:
 
 ```shell
 pip install -e "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
 ```
 
-Verify that installation has succeeded by running the following command, which should print out the installed version of the tool:
+Verify that installation has succeeded by running the following command, which should print out the installed version of `jupyterdask`:
 
 ```shell
 jupyterdask --version
@@ -43,7 +43,7 @@ jupyterdask --version
 
 ### Deployment
 
-After installing `jupyterdask` locally, you can start a JupyterLab session on the remote server and connect to it via the following command:
+After installing `jupyterdask` locally, you can start a remote JupyterLab session with the following command:
 
 ```shell
 jupyterdask -i /path/to/ssh/private/key --python /path/to/python --run host
@@ -77,25 +77,25 @@ If the job running the Jupyter server and the Dask scheduler is killed, the Dask
 
 This section describes the "manual" steps that can be taken in order to deploy Jupyter and Dask on a compute node of the remote cluster.
 
-Starting point is to compile a batch job script for the target cluster. The [`scripts`](./scripts/) folder of this repository contains a number of job scripts that can be used as templates on the various platforms. After having selected the relevant one, copy (and optionally edit) its content to the SLURM cluster, then submit it to the scheduler:
+Starting point is to compile a batch job script for the target cluster. The [`scripts`](./scripts/) folder of this repository contains a number of job scripts that can be used as templates on the various platforms. After having selected the relevant one, copy (and optionally edit) its content to the remote cluster, then submit it to the SLURM scheduler:
 
 ```shell
 sbatch jupyterdask_spider.bsh
 ```
 
-Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:
+Copy the `ssh` command printed in the job output file (`slurm-<JOB_ID>.out`). It should look like:
 
 ```shell
-ssh -i /path/to/private/ssh/key -N -L 8888:NODE:8888 USER@xxx.surf.nl
+ssh -i /path/to/ssh/private/key -N -L 8888:node:8888 host
 ```
 
-Paste the command in a new terminal window **on your local machine** (modify the path to the private key). You can now access the Jupyter session from your browser at the following address: `http://localhost:8888`.
+Paste the command in a new terminal window **on your local machine** after modifying the path to the private key. You can now access the Jupyter session from your browser at the following address: http://localhost:8888 .
 
 ## Access to dCache
 
-We provide functionality to configure access to [the SURF dCache storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html). In particular, we enable access to dCache via the [Filesystem Spec (fsspec)](https://filesystem-spec.readthedocs.io/en/latest/) package (internally used by Dask and several other packages) and our in-house developed fsspec implementation for dCache ([dCacheFS](https://github.com/RS-DAT/dcachefs)).
+The scripts and templates described in this guide allow to configure access to [the SURF dCache storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html). In particular, they enable access to dCache via the [fsspec](https://filesystem-spec.readthedocs.io/en/latest/) package (internally used by Dask and several other packages) and our in-house developed fsspec implementation for dCache ([dCacheFS](https://github.com/RS-DAT/dcachefs)).
 
-The discussed settings essentially configure the access credentials. These can be provided either in the form of username/password or as a macaroon for bearer token authentication (preferred option, it is the only strategy supported by the `jupyterdask` command line tool).
+Access credentials to dCache can be provided either in the form of a username/password pair or as a macaroon for bearer token authentication (preferred option, it is the only strategy supported by the `jupyterdask` command line tool). Information on how to obtain a macaroon can be found as part of [the SURF dCache documentation](https://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons).
 
 More information on how to work vith the dCache storage via fsspec are provided in the documentation of [dCacheFS](https://dcachefs.readthedocs.io/en/latest/).
 
