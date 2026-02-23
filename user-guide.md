@@ -77,9 +77,10 @@ If the job running the Jupyter server and the Dask scheduler is killed, the Dask
 
 This section describes the "manual" steps that can be taken in order to deploy Jupyter and Dask on a compute node of the remote cluster.
 
-Starting point is to compile a batch job script for the target cluster. The [`scripts/batch-job`](./scripts/batch-job/) folder of this repository contains a number of job scripts that can be used as templates on the various platforms. After having selected the relevant file, login to the cluster, copy (and optionally edit) the content of the selected file, and submit the job to the SLURM scheduler:
+Starting point is to compile a batch job script for the target cluster. The [`scripts/batch-job`](./scripts/batch-job/) folder of this repository contains a number of job scripts that can be used as templates on the various platforms. After having selected the relevant file, login to the cluster, download (and optionally edit) the content of the selected file, and submit the job to the SLURM scheduler. For example, on Spider:
 
 ```shell
+wget https://raw.githubusercontent.com/RS-DAT/JupyterDaskOnSLURM/refs/heads/main/scripts/batch-job/jupyterdask_spider.bsh
 sbatch jupyterdask_spider.bsh
 ```
 
