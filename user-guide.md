@@ -1,5 +1,7 @@
 # User guide
 
+## Introduction
+
 The following steps will help you to run a Jupyter server and a Dask cluster on a SLURM compute cluster. This guide has been particularly tailored to the SURF systems [Spider](https://spiderdocs.readthedocs.io) and [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660184/Snellius) (find information on how to get access to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services)). The procedures described here have also been tested on the [DelftBlue Supercomputer at TU Delft](https://doc.dhpc.tudelft.nl/delftblue/).
 
 The guide discusses two alternative routes:
@@ -12,7 +14,7 @@ The guide discusses two alternative routes:
 > * you are able to access the system via SSH;
 > * you have set up a SSH key pair for password-less login, see the dedicated SURF guides for [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660216/Connecting+to+the+system), [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html), or [DelftBlue](https://doc.dhpc.tudelft.nl/delftblue/Remote-access-to-DelftBlue/).
 
-**Table of Contents:**
+## Table of Contents
 
 - [Deployment via the `jupyterdask` command-line tool](#deployment-via-the-jupyterdask-command-line-tool)
   - [Installation](#installation)
@@ -21,6 +23,7 @@ The guide discusses two alternative routes:
 - [Manual deployment](#manual-deployment)
 - [Access to dCache](#access-to-dcache)
 - [Recommendations for Python environments](#recommendations-for-python-environments)
+  - [Tykky HPC Container Wrapper](#tykky-hpc-container-wrapper)
 
 ## Deployment via the `jupyterdask` command-line tool
 
