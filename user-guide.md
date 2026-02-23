@@ -1,10 +1,10 @@
 # User guide
 
-The following steps will help you to run a Jupyter server and a Dask cluster on a SLURM cluster. This guide has been particularly tailored to the SURF systems [Spider](https://spiderdocs.readthedocs.io) and [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660184/Snellius). Find information on how to get access to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services). The procedure described here have also been tested to some extent on the [DelftBlue Supercomputer at TU Delft](https://doc.dhpc.tudelft.nl/delftblue/).
+The following steps will help you to run a Jupyter server and a Dask cluster on a SLURM compute cluster. This guide has been particularly tailored to the SURF systems [Spider](https://spiderdocs.readthedocs.io) and [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660184/Snellius) (find information on how to get access to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services)). The procedures described here have also been tested on the [DelftBlue Supercomputer at TU Delft](https://doc.dhpc.tudelft.nl/delftblue/).
 
 The guide discusses two alternative routes:
 * the first one involves the usage of the [`jupyterdask`](./tools/jupyterdask/) command-line tool, which represents a convenient method to start and connect to Jupyter and Dask on the remote cluster without having to explicitly logging in to the system. This should be the preferred approach for ease-of-use and when basic configurations are sufficient. See the ["Deployment via the `jupyterdask` command-line tool"](#deployment-via-the-jupyterdask-command-line-tool) section below.
-* the second approach describes the "manual" steps that can be taken in order to deploy Jupyter and Dask on a compute node of the remote cluster. These are the steps that could be followed when total control on settings is needed and more advanced configurations are required. See the ["Manual deployment"](#manual-deployment) section below.
+* the second approach involves "manual" steps that can be taken in order to deploy Jupyter and Dask on a compute node of the remote cluster. These are the steps that could be followed when total control on settings is needed and more advanced configurations are required. See the ["Manual deployment"](#manual-deployment) section below.
 
 > [!NOTE]
 > This guide assumes the following:
@@ -12,23 +12,23 @@ The guide discusses two alternative routes:
 > * you are able to access the system via SSH;
 > * you have set up a SSH key pair for password-less login, see the dedicated SURF guides for [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660216/Connecting+to+the+system), [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html), or [DelftBlue](https://doc.dhpc.tudelft.nl/delftblue/Remote-access-to-DelftBlue/).
 
-**Contents:**
+**Table of Contents:**
 
 - [Deployment via the `jupyterdask` command-line tool](#deployment-via-the-jupyterdask-command-line-tool)
   - [Installation](#installation)
   - [Deployment](#deployment)
   - [Shutting down](#shutting-down)
 - [Manual deployment](#manual-deployment)
-- [Recommendations for Python environments](#recommendations-for-python-environments)
 - [Access to dCache](#access-to-dcache)
+- [Recommendations for Python environments](#recommendations-for-python-environments)
 
 ## Deployment via the `jupyterdask` command-line tool
 
-We provide [a Python command-line tool](./tools/jupyterdask/) that allows one to start Jupyter and Dask services on a compute node of a SLURM cluster (Snellius/Spider/etc.) from your local machine and to connect to the system via a single command.
+This repository includes [a Python command-line tool](./tools/jupyterdask/) that allows one to start Jupyter and Dask services on a compute node of a SLURM cluster (Snellius/Spider/etc.) from your local machine and to connect to the system via the execution of a single command.
 
 ### Installation
 
-The `jupyterdask` tool should only be installed **on your local machine**. It can be installed with `pip` as:
+The `jupyterdask` tool only requires installation **on your local machine**. It can be installed with `pip` as:
 
 ```shell
 pip install -e "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
@@ -55,12 +55,12 @@ The following arguments should be provided:
 * `--run`: start Jupyter on the remote cluster and connect to the interface.
 * `host`: it can be provided as `USER@HOSTNAME` (where `USER` is you user name on the remote cluster and `HOSTNAME` is e.g. `spider.surf.nl` or `snellius.surf.nl`) or simply as `HOST` (if a host is defined in `~/.ssh/config`).
 
-A browser window should open up. **Note that it might take few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab session. A Dask cluster (with no worker) is started together with the JupyterLab session, and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers.
+A browser window should open up. **Note that it might take a few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab session. A Dask cluster (with no worker) is started together with the JupyterLab session, and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers.
 
 Additional options for the `jupyterdask` command-line tool include:
 * `-p`: Set local port where to forward the remote Jupyter server (default is 8888).
 * `--timeout`: time (in seconds) waited for the remote Jupyter server to start (default is 120).
-* `--template`: use the given custom file as template for the job script.
+* `--template`: use the given custom file as a template for the job script.
 * `--log-dir`: path where job scripts and log files are saved on the remote cluster (default is `${HOME}/.jupyterdask`).
 
 See all options with `jupyterdask --help`.
