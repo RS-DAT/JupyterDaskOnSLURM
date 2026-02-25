@@ -30,7 +30,7 @@ In order to keep a consistent coding style, we use the [Ruff](https://docs.astra
 
 ```shell
 ruff check .
-ruff lint .
+ruff format .
 ```
 
 The commands above can be run automatically at every commit via pre-commit hooks, which can be installed by running:
