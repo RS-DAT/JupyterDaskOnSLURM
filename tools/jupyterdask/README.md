@@ -7,7 +7,7 @@ A Python command-line tool to facilitate running Jupyter and Dask on a remote SL
 Install the tool with its dependencies using pip:
 
 ```shell
-pip install -e "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
+pip install "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
 ```
 
 Test that you can run the command line tool as:
