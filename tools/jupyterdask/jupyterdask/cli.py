@@ -54,8 +54,8 @@ def parse_args() -> dict[str, Any]:
         "--image",
         help=(
             "use the given container image that has your python execution. Ignored if "
-            "`--template` is also given. Note that `--python` may still be used to modify "
-            "how the executable is called inside the container."
+            "`--template` is also given. Note that `--python` may still be used to "
+            "modify how the executable is called inside the container."
         ),
         type=str,
         required=False,
@@ -71,7 +71,7 @@ def parse_args() -> dict[str, Any]:
         "--verbose",
         help="toggle verbose local output.",
         action="store_true",
-        default=False
+        default=False,
     )
     parser.add_argument(
         "--run",
