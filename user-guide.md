@@ -31,7 +31,7 @@ This repository includes [a Python command-line tool](./tools/jupyterdask/) that
 
 ### Installation
 
-The `jupyterdask` tool only requires installation **on your local machine**. It can be installed with `pip` as:
+The [`jupyterdask`](./tools/jupyterdask/) tool only requires installation **on your local machine**. It can be installed with `pip` as:
 
 ```shell
 pip install -e "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"

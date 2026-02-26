@@ -2,6 +2,8 @@
 
 A Python command-line tool to facilitate running Jupyter and Dask on a remote SLURM cluster.
 
+Note the project partially overlaps with the pre-existing [jupyter-forward](https://github.com/ncar-xdev/jupyter-forward), but the scope of `jupyterdask` is more focused on the usage via batch jobs systems like SLURM. This project also aims to encourage the usage of Apptainer containers and other features specifically tailored for the [SURF](https://www.surf.nl/) systems.
+
 ## Installation
 
 Install the tool with its dependencies using pip:
