@@ -1,18 +1,17 @@
 import os
 
-from jinja2 import Environment, PackageLoader, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, PackageLoader
 
 from .config import get_config
 
 
 def setup_job_script(
-        host: str,
-        template: str | None = None,
-        python: str = "python",
-        log_dir: str = ".jupyterdask",
+    host: str,
+    template: str | None = None,
+    python: str = "python",
+    log_dir: str = ".jupyterdask",
 ) -> str:
-    """
-    Setup the job script to start Jupyter and Dask on the remote cluster.
+    """Set up the job script to start Jupyter and Dask on the remote cluster.
 
     :param host: remote cluster destination
     :param template_path: use the given custom file as template for the job script
@@ -27,8 +26,4 @@ def setup_job_script(
         dirname, basename = os.path.split(os.path.abspath(template))
         env = Environment(loader=FileSystemLoader(dirname))
         temp = env.get_template(basename)
-    return temp.render(
-        python=python,
-        log_dir=log_dir,
-        **vars(get_config(host))
-     )
+    return temp.render(python=python, log_dir=log_dir, **vars(get_config(host)))

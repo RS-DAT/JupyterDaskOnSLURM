@@ -25,12 +25,37 @@ classifiers=[
     'Programming Language :: Python :: 3.12',
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pre-commit",
+]
+
+[tool.ruff]
+lint.select = [
+    "E",  # pycodestyle
+    "F",  # pyflakes
+    "B",  # flake8-bugbear
+    "D",  # pydocstyle
+    "I",  # isort
+    "N",  # PEP8-naming
+    "UP",  # pyupgrade (upgrade syntax to current syntax)
+    "PLE",  # Pylint error https://github.com/charliermarsh/ruff#error-ple
+]
+line-length = 88
+lint.ignore = [
+    "D100",  # Missing docstring in public module
+    "D104",  # Missing docstring in public package
+    "D203",  # Incorrect blank line before class
+    "D213",  # Multi-line summary second line
+]
+
 [project.urls]
 repository = "https://github.com/RS-DAT/JupyterDaskOnSLURM"
 documentation = "https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/README.md"
 
 [project.scripts]
-jupyterdask = "jupyterdask.__main__:__main__"
+jupyterdask = "jupyterdask.main:main"
 
 [tool.setuptools.package-data]
 "jupyterdask.templates" = ["template.slurm"]
