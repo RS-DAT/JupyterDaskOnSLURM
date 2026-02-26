@@ -9,6 +9,7 @@ def setup_job_script(
         host: str,
         template: str | None = None,
         python: str = "python",
+        image: str | None = None,
         log_dir: str = ".jupyterdask",
 ) -> str:
     """
@@ -29,6 +30,7 @@ def setup_job_script(
         temp = env.get_template(basename)
     return temp.render(
         python=python,
+        image=image,
         log_dir=log_dir,
         **vars(get_config(host))
      )

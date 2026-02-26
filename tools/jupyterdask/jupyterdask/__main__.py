@@ -10,6 +10,7 @@ def main(
         timeout: int = 120,
         template: str | None = None,
         python: str = "python",
+        image: str | None = None,
         log_dir: str = ".jupyterdask",
         run: bool = False,
 ) -> None:
@@ -29,6 +30,7 @@ def main(
         host,
         template=template,
         python=python,
+        image=image,
         log_dir=log_dir,
     )
     if run:
