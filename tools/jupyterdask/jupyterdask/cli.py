@@ -53,9 +53,10 @@ def parse_args() -> dict[str, Any]:
     parser.add_argument(
         "--image",
         help=(
-            "use the given container image that has your python execution. Ignored if "
-            "`--template` is also given. Note that `--python` may still be used to "
-            "modify how the executable is called inside the container."
+            "run Python from the given image using Apptainer. Note that `--image` is "
+            "ignored if `--template` is also given, unless the template file contains "
+            "the \{\{image}} variable. Also note that `--python` may still be used to "
+            "modify the executable call inside the container."
         ),
         type=str,
         required=False,
