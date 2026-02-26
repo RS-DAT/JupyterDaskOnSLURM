@@ -9,7 +9,7 @@ Note the project partially overlaps with the pre-existing [jupyter-forward](http
 Install the tool with its dependencies using pip:
 
 ```shell
-pip install -e "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
+pip install "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
 ```
 
 Test that you can run the command line tool as:
@@ -32,7 +32,7 @@ In order to keep a consistent coding style, we use the [Ruff](https://docs.astra
 
 ```shell
 ruff check .
-ruff lint .
+ruff format .
 ```
 
 The commands above can be run automatically at every commit via pre-commit hooks, which can be installed by running:
