@@ -70,6 +70,12 @@ def parse_args() -> dict[str, Any]:
         default=".jupyterdask",
     )
     parser.add_argument(
+        "--verbose",
+        help="toggle verbose local output.",
+        action="store_true",
+        default=False
+    )
+    parser.add_argument(
         "--run",
         help="run Jupyter on the remote cluster and connect to the interface.",
         action="store_true",
