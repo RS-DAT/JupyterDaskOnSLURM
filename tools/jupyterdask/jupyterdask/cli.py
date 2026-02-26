@@ -1,13 +1,11 @@
 import argparse
-
 from typing import Any
 
 from . import __version__
 
 
 def parse_args() -> dict[str, Any]:
-    """
-    Parse command line arguments.
+    """Parse command line arguments.
 
     :return: Input parameter arguments
     """
@@ -45,9 +43,9 @@ def parse_args() -> dict[str, Any]:
     parser.add_argument(
         "--python",
         help=(
-            "Python executable on the remote cluster. This may include commands to activate a "
-            "virtual environment, e.g. `--python='conda activate myenv && python'` or "
-            "`--python='source /path/to/venv/bin/activate && python'`."
+            "Python executable on the remote cluster. This may include commands to "
+            "activate a virtual environment, e.g. `--python='conda activate myenv && "
+            "python'` or `--python='source /path/to/venv/bin/activate && python'`."
         ),
         type=str,
         default="python",
@@ -79,13 +77,10 @@ def parse_args() -> dict[str, Any]:
         "--run",
         help="run Jupyter on the remote cluster and connect to the interface.",
         action="store_true",
-        default=False
+        default=False,
     )
     parser.add_argument(
-        '-v',
-        '--version',
-        action='version',
-        version='%(prog)s ' + __version__
+        "-v", "--version", action="version", version="%(prog)s " + __version__
     )
     args = parser.parse_args()
     return vars(args)

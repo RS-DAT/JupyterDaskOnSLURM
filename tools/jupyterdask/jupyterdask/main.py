@@ -1,25 +1,25 @@
 from .cli import parse_args
-from .run import submit_and_connect
+from .remote import submit_and_connect
 from .template import setup_job_script
 
 
-def main(
-        host: str,
-        identity_file: str | None = None,
-        port: int = 8888,
-        timeout: int = 120,
-        template: str | None = None,
-        python: str = "python",
-        image: str | None = None,
-        log_dir: str = ".jupyterdask",
-        verbose: bool = False,
-        run: bool = False,
+def run(
+    host: str,
+    identity_file: str | None = None,
+    port: int = 8888,
+    timeout: int = 120,
+    template: str | None = None,
+    python: str = "python",
+    image: str | None = None,
+    log_dir: str = ".jupyterdask",
+    verbose: bool = False,
+    run: bool = False,
 ) -> None:
-    """
-    Setup and run Jupyter and Dask on a compute node of a remote cluster.
+    """Set up and run Jupyter and Dask on a compute node of a remote cluster.
 
     :param host: remote cluster destination
-    :param identity_file: path to the private key used for authentication on the remote cluster
+    :param identity_file: path to the private key used for authentication on the remote
+        cluster
     :param port: the local port where to forward the remote Jupyter server
     :param timeout: time (in seconds) waited for the remote Jupyter server to start
     :param template: use the given custom file as template for the job script
@@ -47,6 +47,7 @@ def main(
         )
 
 
-def __main__() -> None:
+def main() -> None:
+    """Run the CLI."""
     args = parse_args()
-    main(**args)
+    run(**args)

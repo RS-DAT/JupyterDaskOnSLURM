@@ -5,7 +5,8 @@ import fabric
 
 @dataclass
 class ClusterConfig:
-    """ Remote cluster configuration. """
+    """Remote cluster configuration."""
+
     cores: int
     walltime: str
     partition: str
@@ -55,8 +56,7 @@ DEFAULT_CONFIGS = {
 
 
 def get_config(host: str) -> ClusterConfig:
-    """
-    Find out a suitable configuration for the given host.
+    """Find out a suitable configuration for the given host.
 
     :param host: remote cluster destination
     :return: default remote cluster configuration
@@ -69,6 +69,6 @@ def get_config(host: str) -> ClusterConfig:
 
 
 def _get_host(host: str) -> str:
-    """ Resolve host, even if it is defined via the SSH agent. """
+    """Resolve host, even if it is defined via the SSH agent."""
     with fabric.Connection(host, forward_agent=True) as c:
         return c.host
