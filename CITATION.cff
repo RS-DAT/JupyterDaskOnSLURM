@@ -28,6 +28,11 @@ authors:
     email: p.chandramoulI@esciencecenter.nl
     affiliation: Netherlands eScience Center
     orcid: 'https://orcid.org/0000-0002-7896-2969'
+  - given-names: Thijs
+    family-names: van Lankveld
+    email: t.vanlankveld@esciencecenter.nl
+    affiliation: Netherlands eScience Center
+    orcid: 'https://orcid.org/0009-0001-1147-4813'
 repository-code: 'https://github.com/RS-DAT/JupyterDaskOnSLURM'
 identifiers:
   - type: doi
