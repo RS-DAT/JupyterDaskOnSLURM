@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --time=02:00:00
-#SBATCH --partition=short
+#SBATCH --cpus-per-task=16
+#SBATCH --time=01:00:00
+#SBATCH --partition=rome
 #SBATCH --output=.jupyterdask/%x-%j.out
 
 APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
@@ -17,10 +17,10 @@ export DASK_JOBQUEUE__SLURM__DEATH_TIMEOUT=60
 export DASK_JOBQUEUE__SLURM__PYTHON=${PYTHON}
 export DASK_JOBQUEUE__SLURM__JOB_EXTRA_DIRECTIVES="['--output', '.jupyterdask/%x-%j.out']"
 export DASK_JOBQUEUE__SLURM__PROCESSES=1
-export DASK_JOBQUEUE__SLURM__CORES=4
-export DASK_JOBQUEUE__SLURM__MEMORY="32GiB"
+export DASK_JOBQUEUE__SLURM__CORES=16
+export DASK_JOBQUEUE__SLURM__MEMORY="28GiB"
 export DASK_JOBQUEUE__SLURM__WALLTIME="01:00:00"
-export DASK_JOBQUEUE__SLURM__QUEUE="normal"
+export DASK_JOBQUEUE__SLURM__QUEUE="rome"
 export DASK_JOBQUEUE__SLURM__LOCAL_DIRECTORY="\$TMPDIR"
 
 ${PYTHON} \
