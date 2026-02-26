@@ -55,7 +55,7 @@ def parse_args() -> dict[str, Any]:
         help=(
             "run Python from the given image using Apptainer. Note that `--image` is "
             "ignored if `--template` is also given, unless the template file contains "
-            "the \{\{image}} variable. Also note that `--python` may still be used to "
+            "the {{image}} variable. Also note that `--python` may still be used to "
             "modify the executable call inside the container."
         ),
         type=str,
