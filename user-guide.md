@@ -10,9 +10,9 @@ The guide discusses two alternative routes:
 
 > [!NOTE]
 > This guide assumes the following:
-> * you have received credentials to the cluster from SURF (or TU Delft);
+> * you have received credentials to the cluster (e.g. from SURF or TU Delft);
 > * you are able to access the system via SSH;
-> * you have set up a SSH key pair for password-less login, see the dedicated SURF guides for [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660216/Connecting+to+the+system), [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html), or [DelftBlue](https://doc.dhpc.tudelft.nl/delftblue/Remote-access-to-DelftBlue/).
+> * you have set up a SSH key pair for password-less login (if working on SURF, see the dedicated guides for [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660216/Connecting+to+the+system), [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html), or the one of [DelftBlue](https://doc.dhpc.tudelft.nl/delftblue/Remote-access-to-DelftBlue/)).
 
 ## Table of Contents
 
