@@ -1,549 +1,142 @@
 # User guide
 
-The following steps will help you to run a Jupyter server and a Dask cluster on
-one of the SURF systems running SLURM, such as Spider, Snellius or Lisa. Find
-information on how to get access to SURF infrastructure
-[here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services).
-Or on the [DelftBlue Supercomputer at TU
-Delft](https://doc.dhpc.tudelft.nl/delftblue/).
+## Introduction
 
-This guide assumes that you have received credentials from SURF or TU Delft,
-that you are able to access the system via SSH, and that an SSH key pair has
-been set up for password-less login, see the dedicated SURF guides for
-[Lisa/Snellius](https://servicedesk.surf.nl/wiki/display/WIKI/SSH#SSH-Bonus2:public-keyauthentication),
-[Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html),
-and
-[DelftBlue](https://doc.dhpc.tudelft.nl/delftblue/Remote-access-to-DelftBlue/).
+The following steps will help you to run a Jupyter server and a Dask cluster on a SLURM compute cluster. This guide has been particularly tailored to the SURF systems [Spider](https://spiderdocs.readthedocs.io) and [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660184/Snellius) (find information on how to get access to SURF infrastructure [here](https://www.surf.nl/en/research-it/apply-for-access-to-compute-services)). The procedures described here have also been tested on the [DelftBlue Supercomputer at TU Delft](https://doc.dhpc.tudelft.nl/delftblue/).
 
-**Contents:**
+The guide discusses two alternative routes:
+* the first one involves the usage of the [`jupyterdask`](./tools/jupyterdask/) command-line tool, which represents a convenient method to start and connect to Jupyter and Dask on the remote cluster without having to explicitly log in to the system. This should be the preferred approach for ease-of-use and when basic configurations are sufficient. See the ["Deployment via the `jupyterdask` command-line tool"](#deployment-via-the-jupyterdask-command-line-tool) section below.
+* the second approach involves "manual" steps that can be taken in order to deploy Jupyter and Dask on a compute node of the remote cluster. These are the steps that could be followed when total control on settings is needed and more advanced configurations are required. See the ["Manual deployment"](#manual-deployment) section below.
 
-- [Local Set-up](#local-set-up)
-  - [Installation on platform](#installation-on-platform)
-    - [Configuring dCache](#configuring-dcache)
-  - [Running](#running)
-  - [Shutting down](#shutting-down)
-  - [Uninstallation on platform](#uninstallation-on-platform)
-- [Manual Installation](#manual-installation)
-  - [Configuration](#configuration)
-    - [Jupyter](#jupyter)
-    - [Dask](#dask)
-    - [dCache](#dcache)
-- [Container wrapper for Spider system](#container-wrapper-for-spider-system)
-- [Troubleshooting](#troubleshooting)
-  - [Manual deployment](#manual-deployment)
-- [Delft Blue](#delft-blue)
+> [!NOTE]
+> This guide assumes the following:
+> * you have received credentials to the cluster (e.g. from SURF or TU Delft);
+> * you are able to access the system via SSH;
+> * you have set up a SSH key pair for password-less login (if working on SURF, see the dedicated guides for [Snellius](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660216/Connecting+to+the+system), [Spider](https://spiderdocs.readthedocs.io/en/latest/Pages/getting_started.html), or the one of [DelftBlue](https://doc.dhpc.tudelft.nl/delftblue/Remote-access-to-DelftBlue/)).
+
+## Table of Contents
+
+- [Deployment via the `jupyterdask` command-line tool](#deployment-via-the-jupyterdask-command-line-tool)
   - [Installation](#installation)
-  - [Configuration](#configuration-1)
   - [Deployment](#deployment)
-
-## Local Set-up
-
-This repository includes [a Python script](./scripts/runJupyterDaskOnSLURM.py)
-to install the components remotely on a SURF platform (Snellius/Spider/etc.),
-and to start Jupyter and Dask services on that platform from a local machine.
-
-**On your local machine**, download the script by cloning this repository:
-
-```shell
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
-cd JupyterDaskOnSLURM
-```
-
-The script requires Python 3 and the [Fabric library](https://www.fabfile.org)
-and, currently, [decorator](https://github.com/micheles/decorator) as well,
-which can be installed via `pip`:
-
-```shell
-pip install fabric decorator
-```
-
-Running the script the first time using the option `--add_platform` queries the
-user for a few infomation about the platform e.g. username and path to the
-private ssh-key, and stores these in a configuration file at
-`.config/platforms/platforms.ini` for later use:
-
-```shell
-python runJupyterDaskOnSLURM.py --add_platform
-```
-
-> NOTE: Don't use `~` for entering a path.
-
-### Installation on platform
-
-Before installing on the platform, edit the `environment.yaml` file in the
-folder to include all conda/pip packages that are needed to run your proposed
-workflow.
-
-After editing the `environment.yaml` file, installing the components on the
-platform can be done from your local machine as:
-
-```shell
-python runJupyterDaskOnSLURM.py --uid <UID> --mode install
-```
-
-> NOTE: that installation can take a while and requires user input to complete.
-
-#### Configuring dCache
-
-In order to configure access to [the SURF dCache
-storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html)
-via [the Filesystem Spec
-library](https://filesystem-spec.readthedocs.io/en/latest/) (internally used by
-Dask and other libraries), you can use the configuration file provided in
-`config/fsspec`. Edit `config/fsspec/config.json`, **replacing the `<MACAROON>`
-string with the actual macaroon** (see [this
-guide](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons)
-for information on how to generate it), then copy the file to
-`${HOME/.config/fsspec}` **on the platform**:
-
-```shell
-mkdir -p ~/.config/fsspec
-cp ./config/fsspec/config.json ~/.config/fsspec/
-```
-
-More information on how to read files from the dCache storage are provided in
-the [documentation of the dCacheFS
-package](https://dcachefs.readthedocs.io/en/latest/).
-
-### Running
-
-You can run Jupyter Lab on the remote server by running the following command
-on your local system:
-
-```shell
-python runJupyterDaskOnSLURM.py --uid <UID> --mode run
-```
-
-A browser window should open up. **Note that it might take few seconds for the
-Jupyter server to start**, after which you should have access to a JupyterLab
-interface (login using the password set as above).
-
-A Dask cluster (with no worker) is started together with the JupyterLab session,
-and it should be listed in the menu appearing when selecting the Dask tab on the
-left part of the screen. Workers can be added by clicking the "scale" button on
-the running cluster instance and by selecting the number of desired workers.
-
-### Shutting down
-
-From the Dask tab in the Jupyter interface, click "shutdown" on a running
-cluster instance to kill all workers and the scheduler (a new cluster based on
-the default configurations can be re-created by pressing the "+" button).
-
-From the Jupyter interface, select "File > Shutdown" to stop the Jupyter server
-and release resources.
-
-If the job running the Jupyter server and the Dask scheduler is killed, the Dask
-workers will also be killed shortly after (configure this using the
-`death-timeout` key in the config file).
-
-### Uninstallation on platform
-
-Uninstalling the components on the platform can be done from your local system as:
-
-```shell
-python runJupyterDaskOnSLURM.py --uid <UID> --mode uninstall
-```
-
-This will remove all associated files and folders. However, mamba will remain
-installed on the platform and needs to be removed manually, if needed.
-
-## Manual Installation
-
-> NOTE: Follow these instructions if <MODE> = 'install' does not work.
-
-> NOTE: if you work on Spider, follow the instruction[Container wrapper for Spider system](#container-wrapper-for-spider-system).
-
-Login to the SURF system from your terminal, then clone and access this repository:
-
-```shell
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
-cd JupyterDaskOnSLURM
-```
-
-Alternatively copy the local copy of `JupyterDaskOnSLURM` which has the modified
-`environment.yaml` file with the updated packages to the platform using the
-`scp` command. For usage of the `scp` command, you can refer to this [blog
-post](https://www.howtogeek.com/804179/scp-command-linux/).
-
-The required packages are most easily installed via the `conda` package manager,
-and they are available from the `conda-forge` channel. In order to install
-`conda` (and its faster C++ implementation `mamba`) and to configure the
-`conda-forge` channel as the default channel, download and run the following
-installation script (you can skip this step if `conda` is already installed):
-
-```shell
-wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
-chmod +x Mambaforge-Linux-x86_64.sh
-./Mambaforge-Linux-x86_64.sh
-```
-
-After accepting the license term and selecting the installation location (the
-default is `${HOME}/mambaforge`), type `yes` to initialize Mambaforge.
-Logout/login to activate.
-
-Create a new environment using the conda environment file in this repository -
-note that the base version of this file has been provided but can be updated to
-include relevant packages for your workflow:
-
-```shell
-mamba env create -f environment.yaml
-```
-
-Activate the environment and install additional dependencies using
-`mamba`/`pip`, as required by each use case:
-
-```shell
-mamba activate jupyter_dask
-mamba install ...
-pip install ...
-```
-
-### Configuration
-
-After having created the environment, we need to configure few settings.
-
-#### Jupyter
-
-Configure the password to access Jupyter:
-
-```shell
-jupyter server --generate-config
-jupyter server password
-```
-
-and make the Jupyter config file that is created after running the previous step
-readable by the current user only:
-
-```shell
-chmod 400 ~/.jupyter/jupyter_server_config.py
-```
-
-The repository directory `scripts` contains template job scripts for Spider and
-Snellius. These scripts define the requirements of the SLURM job running the
-Jupyter server, they can be customized depending on the specific user needs.
-
-#### Dask
-
-The repository directory `config/dask` contains a template Dask configuration
-file. This file defines the default worker settings in the Dask cluster, and it
-thus **needs to be edited depending on the SURF system or other system** which
-we are running on. In particular, **uncomment the correct block in
-`config/dask/config.yaml`**, then copy the file to `${HOME}/.config/dask`:
-
-```shell
-mkdir -p ~/.config/dask
-cp config/dask/config.yaml ~/.config/dask/
-```
-
-The default Dask settings can be further tuned depending on user needs.
-
-#### dCache
-
-In order to configure access to [the SURF dCache
-storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html)
-via [the Filesystem Spec
-library](https://filesystem-spec.readthedocs.io/en/latest/) (internally used by
-Dask and other libraries), you can use the configuration file provided in
-`config/fsspec`. Edit `config/fsspec/config.json`, **replacing the `<MACAROON>`
-string with the actual macaroon** (see [this
-guide](http://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons)
-for information on how to generate it), then copy the file to
-`${HOME/.config/fsspec}`:
-
-```shell
-mkdir -p ~/.config/fsspec
-cp config/fsspec/config.json ~/.config/fsspec/
-```
-
-More information on how to read files from the dCache storage are provided in
-the [documentation of the dCacheFS
-package](https://dcachefs.readthedocs.io/en/latest/).
-
-## Troubleshooting
-
-### Manual deployment
-
-As an alternative to the deployment script, the Jupyter and Dask services can
-be started via the following "manual" procedure.
-
-Login to the SURF system, then submit a batch job script based on the template
-provided in `scripts/jupyter_dask_<PLATFORM_NAME>.bsh` to start the Jupyter
-server and the Dask scheduler on a platform, for example:
-
-```shell
-sbatch scripts/jupyter_dask_snellius.bsh
-```
-
-Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It
-should look like:
-
-```shell
-ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.surf.nl
-```
-
-Paste the command in a new terminal window **on your local machine** (modify the
-path to the private key). You can now access the Jupyter session from your
-browser at `localhost:8889`.
-
-## Container wrapper for Spider system
-
-On Spider, using conda environments will lead to performance issues, due to
-conda's nature of many small files. In such cases, one can containerize the
-conda environment. One way to do this is to use the
-[hpc-container-wrapper](https://github.com/CSCfi/hpc-container-wrapper) tool.
-This is a container wrapper tool developed by Finnish IT center for science
-(CSC).
-
-To set up the container wrapper, first log in to Spider:
-
-```shell
-ssh USER@spider.surf.nl
-```
-
-Then, clone the `JupyterDaskOnSLURM` repository in your home directory:
-
-```shell
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
-```
-
-change to the `JupyterDaskOnSLURM` directory:
-
-```shell
-cd JupyterDaskOnSLURM
-```
-
-and execute the `spider_container_deploy.sh` script:
-
-```shell
-bash spider_container_deploy.sh
-```
-
-This will run the setup and containerization of the `environment.yaml` file
-contained in the `JupyterDaskOnSLURM` directory (please modify as needed before
-running the script).
-
-Now you are all set!
-
-### Manual installation on Spider using the container wrapper
-
-If you want to manually set up the container wrapper on Spider, follow the steps
-below.
-
-First change to your home directory:
-
-```shell
-cd ~
-```
-
-Then, clone both the `hpc-container-wrapper` and `JupyterDaskOnSLURM` repositories:
-
-```shell
-git clone https://github.com/CSCfi/hpc-container-wrapper.git
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
-```
-
-Then, copy the container config file `spider.yaml` file from the
-`JupyterDaskOnSLURM` to the `.config` file in `hpc-container-wrapper`:
-
-```shell
-cp ./JupyterDaskOnSLURM/config/container/spider.yaml ./hpc-container-wrapper/configs/
-```
-
-Change to the `hpc-container-wrapper` directory and run the
-`install.sh` script to install the container wrapper:
-
-```shell
-cd hpc-container-wrapper
-bash install.sh spider
-```
-
-Next, copy the `environment.yaml` file from the `JupyterDaskOnSLURM`
-to the current directory and create a container. In the following example, we
-create a container under `jupyter_dask` directory:
-
-```shell
-mkdir -p ./jupyter_dask
-cp ../JupyterDaskOnSLURM/environment.yaml .
-bin/conda-containerize new --prefix ./jupyter_dask ./environment.yaml
-```
-
-At the end of the installation, the tool will print the path to the executable
-directory (`bin` directory) of the container. For example:
-
-```output
-export PATH="/absolute/path/to/the/container/bin:$PATH"
-```
-
-```shell
-cd ..
-mkdir -p ~/.config/dask
-cp JupyterDaskOnSLURM/config/dask/config_spider.yml ~/.config/dask/config.yml
-```
-
-Then add the following lines to the `~/.config/dask/config.yml` file, under the
-`slurm` section of `jobqueue` section, note that you need to replace the `export
-PATH` part with the output from the container creation step:
-
-```yaml
-    job_script_prologue:
-      - 'export PATH="/absolute/path/to/the/container/bin:$PATH"' # Export environment path to
-    python: python
-```
-
-After adding the lines, the `~/.config/dask/config.yml` file should look like this:
-
-```yaml
-  distributed:
-    ... Some other configurations ...
-  labextension:
-    ... Some other configurations ...
-  jobqueue:
-    slurm:
-      ... Some other configurations ...
-      job_script_prologue:
-        - 'export PATH="/home/caroline-oku/caroline/Public/demo_mobyle/container_wrapper/hpc-container-wrapper/tmp/bin:$PATH"'
-      python: python
-```
-
-Then also configure the SLURM job file
-`JupyterDaskOnSLURM/scripts/jupyter_dask_spider_container.bsh`. Then replace the
-following part with the PATH exportaion from the container creation step:
-
-```shell
-# CHANGE THIS TO THE ABSOLUTE PATH TO THE CONTAINER BIN
-export PATH="/absolute/path/to/the/container/bin:$PATH"
-```
-
-Now you have reached the exit point of the deployment script! The Jupyter Server
-with Dask plugin can now be started using the
-`jupyter_dask_spider_container.bsh` script.
-
-```shell
-sbatch JupyterDaskOnSLURM/scripts/jupyter_dask_spider_container.bsh
-```
-
-After the job starts, there will be an example `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It should look like:
-
-```shell
-ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.surf.nl
-```
-
-You can execute this command in a new terminal window **on your local machine**
-(modify the path to the private key). You can now access the Jupyter session
-from your browser at `localhost:8889`.
-
-## Delft Blue
-
-Follow the steps bellow to install and configure
+  - [Shutting down](#shutting-down)
+- [Manual deployment](#manual-deployment)
+- [Access to dCache](#access-to-dcache)
+- [Recommendations for Python environments](#recommendations-for-python-environments)
+  - [Tykky HPC Container Wrapper](#tykky-hpc-container-wrapper)
+
+## Deployment via the `jupyterdask` command-line tool
+
+This repository includes [a Python command-line tool](./tools/jupyterdask/) that allows one to start Jupyter and Dask services on a compute node of a SLURM cluster (Snellius/Spider/etc.) from your local machine and to connect to the system via the execution of a single command.
 
 ### Installation
 
-1. Use `module` to load `miniconda`:
+The [`jupyterdask`](./tools/jupyterdask/) tool only requires installation **on your local machine**. It can be installed with `pip` as:
 
 ```shell
-module load miniconda3/4.12.0
+pip install -e "git+https://github.com/RS-DAT/JupyterDaskOnSLURM.git#egg=jupyterdask&subdirectory=tools/jupyterdask"
 ```
 
-2. Clone the repository:
+Verify that installation has succeeded by running the following command, which should print out the installed version of `jupyterdask`:
 
 ```shell
-git clone http://github.com/RS-DAT/JupyterDaskOnSLURM.git
-cd JupyterDaskOnSLURM
+jupyterdask --version
+# jupyterdask 0.3.0
 ```
-
-3. If required, modify the `environment.yaml` to include relevant packages for your workflow. Then, create an environment using conda":
-
-```shell
-conda env create -f environment.yaml
-```
-
-4. Activate the environment and install additional dependencies using
-   `conda`/`pip`, as required by each use case:
-
-```shell
-conda activate jupyter_dask
-conda install ...
-pip install ...
-```
-
-### Configuration
-
-1. Configure the password to access **Jupyter**:
-
-```shell
-jupyter server --generate-config
-jupyter server password
-```
-
-and make the Jupyter config file that is created after running the previous step
-readable by the current user only:
-
-```shell
-chmod 400 ~/.jupyter/jupyter_server_config.py
-```
-
-The repository directory `scripts` contains template job scripts for Spider,
-Snellius and DelftBlue. These scripts define the requirements of the SLURM job
-running the Jupyter server, they can be customized depending on the specific
-user needs.
-
-```shell
-#!/bin/bash
-### Initialize the server
-#SBATCH --partition=compute ## one of 'compute', 'gpu', 'memory'
-#SBATCH --ntasks=1
-#SBATCH --time=23:00:00
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=4G
-#SBATCH --account=innovation ## replace with research-<faculty>-<department>. This will enable to request more resources.
-
-source ~/.bashrc
-conda activate jupyter_dask
-
-node=`hostname -s`
-port=`shuf -i 8400-9400 -n 1`
-if [ -z ${lport:+x} ]; then lport="8889" ; else lport=${lport}; fi
-
-echo "Run the following on your local machine: "
-echo "ssh -i /path/to/private/ssh/key -N -L ${lport}:${node}:${port} ${USER}@login.delftblue.tudelft.nl"
-
-jupyter lab --no-browser --port=${port} --ip=${node}
-```
-
-2. Configure the **Dask** settings. The repository directory `config/dask`
-   contains templates for the Dask configuration files. The cofiguration file
-   defines the default worker settings in the Dask cluster, and it thus **needs
-   to be edited depending on the SURF system or other system** which we are
-   running on. In particular, the  **file corresponding to DelftBlue
-   `config/dask/config_delftblue.yml`**. Copy the file to
-   `${HOME}/.config/dask`:
-
-```shell
-mkdir -p ~/.config/dask
-cp -r config/dask/config_delftblue.yml ~/.config/dask/config.yml
-```
-
-The default Dask settings can be further tuned depending on user needs.
 
 ### Deployment
 
-On DelftBlue, you need to start the the Jupyter and Dask services manually using this procedure.
-
-1. Login to DelftBlue, then submit a SLURM job based using the template provided
-   in `scripts/jupyter_dask_delftblue.bsh` to start the Jupyter server and the
-   Dask scheduler on the login node:
+After installing `jupyterdask` locally, you can start a remote JupyterLab session with the following command:
 
 ```shell
-sbatch scripts/jupyter_dask_delftblue.bsh
+jupyterdask -i /path/to/ssh/private/key --python /path/to/python --run host
 ```
 
-Copy the `ssh` command printed in the job stdout (file `slurm-<JOB_ID>.out`). It
-should look like:
+The following arguments should be provided:
+* `-i`: path to the private key used for authentication on the remote cluster.
+* `--python`: Python executable on the remote cluster. This may include commands to activate a virtual environment, e.g. `--python='conda activate myenv && python'` or `--python='source /path/to/venv/bin/activate && python'`. See also section on ["Recommendations for Python environments"](#recommendations-for-python-environments).
+* `--run`: start Jupyter on the remote cluster and connect to the interface.
+* `host`: it can be provided as `USER@HOSTNAME` (where `USER` is you user name on the remote cluster and `HOSTNAME` is e.g. `spider.surf.nl` or `snellius.surf.nl`) or simply as `HOST` (if a host is defined in `~/.ssh/config`).
+
+A browser window should open up. **Note that it might take a few seconds for the Jupyter server to start**, after which you should have access to a JupyterLab session. A Dask cluster (with no worker) is started together with the JupyterLab session, and it should be listed in the menu appearing when selecting the Dask tab on the left part of the screen. Workers can be added by clicking the "scale" button on the running cluster instance and by selecting the number of desired workers.
+
+Additional options for the `jupyterdask` command-line tool include:
+* `-p`: Set local port where to forward the remote Jupyter server (default is 8888).
+* `--timeout`: time (in seconds) waited for the remote Jupyter server to start (default is 120).
+* `--template`: use the given custom file as a template for the job script.
+* `--log-dir`: path where job scripts and log files are saved on the remote cluster (default is `${HOME}/.jupyterdask`).
+
+See all options with `jupyterdask --help`.
+
+### Shutting down
+
+From the Dask tab in the Jupyter interface, click "shutdown" on a running cluster instance to kill all workers and the scheduler (a new cluster based on the default configurations can be re-created by pressing the "+" button).
+
+From the Jupyter interface, select "File > Shutdown" to stop the Jupyter server and release resources.
+
+If the job running the Jupyter server and the Dask scheduler is killed, the Dask workers will also be killed shortly after.
+
+## Manual deployment
+
+This section describes the "manual" steps that can be taken in order to deploy Jupyter and Dask on a compute node of the remote cluster.
+
+Starting point is to compile a batch job script for the target cluster. The [`scripts/batch-job`](./scripts/batch-job/) folder of this repository contains a number of job scripts that can be used as templates on the various platforms. After having selected the relevant file, login to the cluster, download (and optionally edit) the content of the selected file, and submit the job to the SLURM scheduler. For example, on Spider:
 
 ```shell
-ssh -i /path/to/private/ssh/key -N -L 8889:NODE:8888 USER@sssssss.tudelft.nl
+wget https://raw.githubusercontent.com/RS-DAT/JupyterDaskOnSLURM/refs/heads/main/scripts/batch-job/jupyterdask_spider.bsh
+sbatch jupyterdask_spider.bsh
 ```
 
-Paste the command in a new terminal window **on your local machine** (modify the
-path to the private key). You can now access the Jupyter session from your
-browser at `localhost:8889`.
+As part of the job, a line with the command to set up a SSH tunnel to the remote Jupyter session will be written in the job output file (`slurm-<JOB_ID>.out`). It should look like:
+
+```shell
+ssh -i /path/to/ssh/private/key -N -L 8888:node:8888 host
+```
+
+Paste the command in a new terminal window **on your local machine** after modifying the path to the private key. Note that the command will hang without printing any output to screen. You will now be able to access the Jupyter session from your browser at the following address: http://localhost:8888 .
+
+Shutting down the Dask and Jupyter sessions from the JupyterLab interface will release resources (see also the section ["Shutting down"](#shutting-down)). The SSH tunnel can then be killed (e.g. with `Ctrl+C`).
+
+## Access to dCache
+
+The scripts and templates described in this guide allow to configure access to [the SURF dCache storage](http://doc.grid.surfsara.nl/en/stable/Pages/Service/system_specifications/dcache_specs.html). In particular, they enable access to dCache via the [fsspec](https://filesystem-spec.readthedocs.io/en/latest/) package (internally used by Dask and several other packages) and our in-house developed fsspec implementation for dCache ([dCacheFS](https://github.com/RS-DAT/dcachefs)).
+
+Access credentials to dCache can be provided either in the form of a username/password pair or as a macaroon for bearer token authentication (preferred option). Information on how to obtain a macaroon can be found as part of [the SURF dCache documentation](https://doc.grid.surfsara.nl/en/latest/Pages/Advanced/storage_clients/webdav.html#sharing-data-with-macaroons).
+
+More information on how to work with the dCache storage via fsspec are provided in the documentation of [dCacheFS](https://dcachefs.readthedocs.io/en/latest/).
+
+## Recommendations for Python environments
+
+The distributed file systems that are used on HPC systems like Spider or Snellius are designed to efficiently read/write large files but suffer severe limitations when dealing with a large number of small files. For this reason, Conda and other (Python) environment managers that involve the creation of many files could become very slow (and additional put strain) on these file systems. The following approaches allow to bypass the issue while still allowing to make use of the convenience of package managers like Conda:
+
+* Containerize the environment using [Apptainer](https://apptainer.org/), a container system analogous to Docker but suitable for execution on HPC systems. By wrapping the environment in a container image, the software installation looks like a single file to the underlying file system, circumventing the many-small-files issue mentioned above. One can automate the process of building a container image with a custom environment via continuous integration, see e.g. [this example repository](https://github.com/RS-DAT/2025-09-03-EO-summer-school), where we build a container image with a Conda environment using GitHub Actions and push the image to [the GitHub Container Registry (GHCR)](https://github.com/RS-DAT/2025-09-03-EO-summer-school/pkgs/container/2025-09-03-eo-summer-school).
+* Alternatively, one can make use of the [Tykky container wrapper for HPC](https://docs.csc.fi/computing/containers/tykky/) developed by the Finnish [IT Center for Science (CSC)](https://csc.fi/en/). This solution is similar to the previous one, since it also uses Apptainer to wrap Conda- or pip-based environments, but it additionally generates wrappers so that the installed software can be used (almost) as if it was not containerized. Note that a few configuration steps need to be carried out in order to set up the HPC container wrapper - see [the section below](#tykky-hpc-container-wrapper). Also note that both the `jupyterdask` command-line tool and the manual deployment scripts can be configured to use the HPC container wrapper exclusively by setting the path to the Python executable wrapper (i.e. `--python /path/to/install_dir/bin/python` and `PYTHON=/path/to/install_dir/bin/python`, respectively).
+
+Advantages of the former approach include the possibility to easily automate the process of building the environment image and it is thus the **recommended option**. Advantages of using the Tykky container wrapper include the availability of tools to update the environment without having to rebuild the container image, but it requires one to build the image on the cluster where it will run.
+
+### Appendix: Tykky HPC Container Wrapper
+
+In order to setup the Tykky HPC container wrapper, one needs to log in to the target cluster, clone and access the [hpc-container-wrapper](https://github.com/CSCfi/hpc-container-wrapper) repository:
+
+```shell
+git clone https://github.com/CSCfi/hpc-container-wrapper .
+cd hpc-container-wrapper
+```
+
+We provide configuration files for Spider and Snellius in [`config/hpc-container-wrapper`](./config/hpc-container-wrapper/). Download the relevant configuration file to the `configs` directory, then run the installation shell script. For example, on Spider:
+
+```shell
+wget https://raw.githubusercontent.com/RS-DAT/JupyterDaskOnSLURM/refs/heads/main/config/hpc-container-wrapper/spider.yaml -P ./configs
+bash install.sh spider
+```
+
+A containerized conda environment can now be created using the following command. Note that we provide [a template environment file](https://github.com/RS-DAT/JupyterDaskOnSLURM/blob/main/config/conda/environment.yaml) that includes Jupyter, Dask and a few other software packages that are relevant for this project.
+
+```shell
+mkdir -p /path/to/install_dir/
+bash bin/conda-containerize new --mamba --prefix /path/to/install_dir/  environment.yaml
+```
+
+Now you are all set! For more advanced configuration options or for information on how to update a containerized environment have a look at the [HCP container wrapper documentation](https://docs.lumi-supercomputer.eu/software/installing/container-wrapper/) or at [the dedicated section in the Spider documentation](https://doc.spider.surfsara.nl/en/latest/Pages/software_on_spider.html#lumi-container-wrapper).
+
+
