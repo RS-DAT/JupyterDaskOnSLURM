@@ -19,6 +19,11 @@
       "affiliation": "Netherlands eScience Center",
       "name": "Chandramouli, Pranav",
       "orcid": "0000-0002-7896-2969"
+    },
+    {
+      "affiliation": "Netherlands eScience Center",
+      "name": "van Lankveld, Thijs",
+      "orcid": "0009-0001-1147-4813"
     }
   ],
   "description": "This repository contains instructions and material to setup and run a Jupyter server and a Dask cluster on a SLURM system, such as the Spider data processing platform and the Snellius supercomputer, both hosted by SURF.",

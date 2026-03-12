@@ -10,7 +10,9 @@ def run(
     timeout: int = 120,
     template: str | None = None,
     python: str = "python",
+    image: str | None = None,
     log_dir: str = ".jupyterdask",
+    verbose: bool = False,
     run: bool = False,
 ) -> None:
     """Set up and run Jupyter and Dask on a compute node of a remote cluster.
@@ -29,8 +31,11 @@ def run(
         host,
         template=template,
         python=python,
+        image=image,
         log_dir=log_dir,
     )
+    if verbose:
+        print(job_script)
     if run:
         submit_and_connect(
             job_script,
