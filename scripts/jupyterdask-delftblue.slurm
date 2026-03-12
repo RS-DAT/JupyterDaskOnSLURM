@@ -5,6 +5,8 @@
 #SBATCH --time=01:00:00
 #SBATCH --partition=compute
 #SBATCH --output=.jupyterdask/%x-%j.out
+#SBATCH --mem-per-cpu=8G
+#SBATCH --account=innovation ## replace with research-<faculty>-<department>. This will enable to request more resources.
 
 APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
 APPTAINER_IMAGE="oras://ghcr.io/rs-dat/2025-09-03-eo-summer-school:latest"
