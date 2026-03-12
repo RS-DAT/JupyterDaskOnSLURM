@@ -16,6 +16,7 @@ class ClusterConfig:
     worker_walltime: str
     worker_partition: str
     worker_local_directory: str
+    login_domain: str
 
 
 DEFAULT_CONFIGS = {
@@ -29,6 +30,7 @@ DEFAULT_CONFIGS = {
         worker_walltime="01:00:00",
         worker_partition="normal",
         worker_local_directory=r"\$TMPDIR",
+        login_domain="spider.surf.nl",
     ),
     "snellius": ClusterConfig(
         cores=16,
@@ -40,6 +42,7 @@ DEFAULT_CONFIGS = {
         worker_walltime="01:00:00",
         worker_partition="rome",
         worker_local_directory=r"\$TMPDIR",
+        login_domain="snellius.surf.nl",
     ),
     "delftblue": ClusterConfig(
         cores=1,
@@ -51,6 +54,7 @@ DEFAULT_CONFIGS = {
         worker_walltime="01:00:00",
         worker_partition="compute",
         worker_local_directory=r"/scratch/\$USER",
+        login_domain="login.delftblue.tudelft.nl",
     ),
 }
 

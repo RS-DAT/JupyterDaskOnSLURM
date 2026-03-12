@@ -23,6 +23,9 @@ export DASK_JOBQUEUE__SLURM__WALLTIME="01:00:00"
 export DASK_JOBQUEUE__SLURM__QUEUE="normal"
 export DASK_JOBQUEUE__SLURM__LOCAL_DIRECTORY="\$TMPDIR"
 
+echo "Run the following on your local machine: "
+echo "ssh -i /path/to/private/ssh/key -N -L 8888:${NODE}:${PORT} ${USER}@spider.surf.nl"
+
 ${PYTHON} \
   -m jupyterlab \
   --no-browser \

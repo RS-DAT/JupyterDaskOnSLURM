@@ -25,6 +25,9 @@ export DASK_JOBQUEUE__SLURM__WALLTIME="{{ worker_walltime }}"
 export DASK_JOBQUEUE__SLURM__QUEUE="{{ worker_partition }}"
 export DASK_JOBQUEUE__SLURM__LOCAL_DIRECTORY="{{ worker_local_directory }}"
 
+echo "Run the following on your local machine: "
+echo "ssh -i /path/to/private/ssh/key -N -L 8888:${NODE}:${PORT} ${USER}@{{ login_domain }}"
+
 ${PYTHON} \
   -m jupyterlab \
   --no-browser \
