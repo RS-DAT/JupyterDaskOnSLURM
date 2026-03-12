@@ -28,8 +28,5 @@ def setup_job_script(
         env = Environment(loader=FileSystemLoader(dirname))
         temp = env.get_template(basename)
     return temp.render(
-        python=python,
-        image=image,
-        log_dir=log_dir,
-        **vars(get_config(host))
+        python=python, image=image, log_dir=log_dir, **vars(get_config(host))
     )
