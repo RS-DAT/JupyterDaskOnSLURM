@@ -36,7 +36,10 @@ def parse_args() -> dict[str, Any]:
     )
     parser.add_argument(
         "--template",
-        help="use the given custom file as template for the job script.",
+        help=(
+            "use the given custom file as template for the job script. Note that "
+            "`--python`, `--image`, and `--log_dir` are ignored, unless the template "
+            "file contains the relevant variable, e.g.  {{ python }}."),
         type=str,
         required=False,
     )
@@ -53,10 +56,8 @@ def parse_args() -> dict[str, Any]:
     parser.add_argument(
         "--image",
         help=(
-            "run Python from the given image using Apptainer. Note that `--image` is "
-            "ignored if `--template` is also given, unless the template file contains "
-            "the {{image}} variable. Also note that `--python` may still be used to "
-            "modify the executable call inside the container."
+            "run Python from the given image using Apptainer. Note that `--python` may "
+            "still be used to modify the executable call inside the container."
         ),
         type=str,
         required=False,
