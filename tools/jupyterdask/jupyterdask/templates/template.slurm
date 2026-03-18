@@ -6,8 +6,8 @@
 #SBATCH --partition={{ partition }}
 #SBATCH --output={{ log_dir }}/%x-%j.out
 {% if login_domain == "login.delftblue.tudelft.nl" -%}
-#SBATCH --mem-per-cpu={{ worker_memory }}
-#SBATCH --account=innovation ## replace with research-<faculty>-<department>. This will enable to request more resources.
+#SBATCH --mem-per-cpu={{ mem_per_cpu }}
+#SBATCH --account={{ account }}
 {% endif -%}
 {% if image %}
 APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"

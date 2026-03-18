@@ -17,6 +17,8 @@ class ClusterConfig:
     worker_partition: str
     worker_local_directory: str
     login_domain: str
+    mem_per_cpu: str|None = None
+    account: str|None = None
 
 
 DEFAULT_CONFIGS = {
@@ -48,6 +50,8 @@ DEFAULT_CONFIGS = {
         cores=1,
         walltime="01:00:00",
         partition="compute",
+        mem_per_cpu="4G",
+        account="innovation",
         worker_processes=1,
         worker_cores=2,
         worker_memory="8G",
