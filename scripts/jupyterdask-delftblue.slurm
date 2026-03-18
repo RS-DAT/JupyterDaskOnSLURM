@@ -28,11 +28,13 @@ export DASK_JOBQUEUE__SLURM__WALLTIME="01:00:00"
 export DASK_JOBQUEUE__SLURM__QUEUE="compute"
 export DASK_JOBQUEUE__SLURM__LOCAL_DIRECTORY="/scratch/\$USER"
 
+NODE=`hostname -s`
+PORT=`shuf -i 8400-9400 -n 1`
 echo "Run the following on your local machine: "
 echo "ssh -i /path/to/private/ssh/key -N -L 8888:${NODE}:${PORT} ${USER}@login.delftblue.tudelft.nl"
 
 ${PYTHON} \
   -m jupyterlab \
   --no-browser \
-  --port=`shuf -i 8400-9400 -n 1` \
-  --ip=0.0.0.0
+  --port=${PORT} \
+  --ip=${NODE}
