@@ -35,4 +35,4 @@ ${PYTHON} \
   -m jupyterlab \
   --no-browser \
   --port=`shuf -i 8400-9400 -n 1` \
-  --ip=0.0.0.0
+  --ip=`hostname -s`
