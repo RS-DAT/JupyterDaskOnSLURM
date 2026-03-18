@@ -5,8 +5,11 @@
 #SBATCH --time=01:00:00
 #SBATCH --partition=compute
 #SBATCH --output=.jupyterdask/%x-%j.out
-#SBATCH --mem-per-cpu=8G
-#SBATCH --account=innovation ## replace with research-<faculty>-<department>. This will enable to request more resources.
+#SBATCH --mem-per-cpu=4G
+#SBATCH --account=innovation
+
+# For partition options, check https://doc.dhpc.tudelft.nl/delftblue/Slurm-scheduler/#job-submission-and-control-using-slurm
+# Replace --account with research-<faculty>-<department>. This will enable to request more resources.
 
 APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
 APPTAINER_IMAGE="oras://ghcr.io/rs-dat/2025-09-03-eo-summer-school:latest"
@@ -17,7 +20,7 @@ export DASK_LABEXTENSION__FACTORY__MODULE="dask_jobqueue"
 export DASK_LABEXTENSION__FACTORY__CLASS="SLURMCluster"
 export DASK_JOBQUEUE__SLURM__DEATH_TIMEOUT=60
 export DASK_JOBQUEUE__SLURM__PYTHON=${PYTHON}
-export DASK_JOBQUEUE__SLURM__JOB_EXTRA_DIRECTIVES="['--output', '.jupyterdask/%x-%j.out']"
+export DASK_JOBQUEUE__SLURM__JOB_EXTRA_DIRECTIVES="['--output', '.jupyterdask/%x-%j.out', '--account', 'innovation']"
 export DASK_JOBQUEUE__SLURM__PROCESSES=1
 export DASK_JOBQUEUE__SLURM__CORES=2
 export DASK_JOBQUEUE__SLURM__MEMORY="8G"

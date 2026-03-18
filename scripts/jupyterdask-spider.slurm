@@ -6,6 +6,8 @@
 #SBATCH --partition=normal
 #SBATCH --output=.jupyterdask/%x-%j.out
 
+# For partition options, check https://doc.spider.surfsara.nl/en/latest/Pages/compute_on_spider.html#prepare-your-workloads
+
 APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
 APPTAINER_IMAGE="oras://ghcr.io/rs-dat/2025-09-03-eo-summer-school:latest"
 PYTHON="${APPTAINER_CMD} ${APPTAINER_IMAGE} python"

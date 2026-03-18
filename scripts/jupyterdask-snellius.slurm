@@ -6,6 +6,8 @@
 #SBATCH --partition=rome
 #SBATCH --output=.jupyterdask/%x-%j.out
 
+# For partition options, check https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30660209/Snellius+partitions+and+accounting
+
 APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
 APPTAINER_IMAGE="oras://ghcr.io/rs-dat/2025-09-03-eo-summer-school:latest"
 PYTHON="${APPTAINER_CMD} ${APPTAINER_IMAGE} python"
