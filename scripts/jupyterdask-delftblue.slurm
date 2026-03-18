@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00
+#SBATCH --partition=compute
+#SBATCH --output=.jupyterdask/%x-%j.out
+#SBATCH --mem-per-cpu=4G
+#SBATCH --account=innovation
+
+# For partition options, check https://doc.dhpc.tudelft.nl/delftblue/Slurm-scheduler/#job-submission-and-control-using-slurm
+# Replace --account with research-<faculty>-<department>. This will enable to request more resources.
+
+APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
+APPTAINER_IMAGE="oras://ghcr.io/rs-dat/2025-09-03-eo-summer-school:latest"
+PYTHON="${APPTAINER_CMD} ${APPTAINER_IMAGE} python"
+
+export DASK_DISTRIBUTED__DASHBOARD__LINK="/proxy/{port}/status"
+export DASK_LABEXTENSION__FACTORY__MODULE="dask_jobqueue"
+export DASK_LABEXTENSION__FACTORY__CLASS="SLURMCluster"
+export DASK_JOBQUEUE__SLURM__DEATH_TIMEOUT=60
+export DASK_JOBQUEUE__SLURM__PYTHON=${PYTHON}
+export DASK_JOBQUEUE__SLURM__JOB_EXTRA_DIRECTIVES="['--output', '.jupyterdask/%x-%j.out', '--account', 'innovation']"
+export DASK_JOBQUEUE__SLURM__PROCESSES=1
+export DASK_JOBQUEUE__SLURM__CORES=2
+export DASK_JOBQUEUE__SLURM__MEMORY="8G"
+export DASK_JOBQUEUE__SLURM__WALLTIME="01:00:00"
+export DASK_JOBQUEUE__SLURM__QUEUE="compute"
+export DASK_JOBQUEUE__SLURM__LOCAL_DIRECTORY="/scratch/\$USER"
+
+NODE=`hostname -s`
+PORT=`shuf -i 8400-9400 -n 1`
+echo "Run the following on your local machine: "
+echo "ssh -i /path/to/private/ssh/key -N -L 8888:${NODE}:${PORT} ${USER}@login.delftblue.tudelft.nl"
+
+${PYTHON} \
+  -m jupyterlab \
+  --no-browser \
+  --port=${PORT} \
+  --ip=${NODE}

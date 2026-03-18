@@ -141,9 +141,8 @@ def _get_jupyter_url(connection: Connection, path: str) -> str:
 
 def _parse_url(url: str) -> dict[str, Any]:
     parsed = urlparse(url)
-    hostname, _ = parsed.hostname.split(".", 1)  # Only use short hostname
     token = parse_qs(parsed.query).get("token", [None])[0]
-    return {"hostname": hostname, "port": parsed.port, "token": token}
+    return {"hostname": parsed.hostname, "port": parsed.port, "token": token}
 
 
 def _forward_port_and_open_browser(
