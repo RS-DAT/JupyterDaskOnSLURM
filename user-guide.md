@@ -54,7 +54,7 @@ jupyterdask -i /path/to/ssh/private/key --python /path/to/python --run host
 
 The following arguments should be provided:
 * `-i`: path to the private key used for authentication on the remote cluster.
-* `--python`: Python executable on the remote cluster. This may include commands to activate a virtual environment, e.g. `--python='conda activate myenv && python'` or `--python='source /path/to/venv/bin/activate && python'`. See also section on ["Recommendations for Python environments"](#recommendations-for-python-environments).
+* `--python`: Python executable on the remote cluster. This may include commands to activate a virtual environment, e.g. `--python='conda activate myenv && python'` or `--python='source /path/to/venv/bin/activate && python'`. In order to run Python in a container, see `--image` option below (and check the section ["Recommendations for Python environments"](#recommendations-for-python-environments) for more context).
 * `--run`: start Jupyter on the remote cluster and connect to the interface.
 * `host`: it can be provided as `USER@HOSTNAME` (where `USER` is you user name on the remote cluster and `HOSTNAME` is e.g. `spider.surf.nl` or `snellius.surf.nl`) or simply as `HOST` (if a host is defined in `~/.ssh/config`).
 
@@ -65,6 +65,7 @@ Additional options for the `jupyterdask` command-line tool include:
 * `--timeout`: time (in seconds) waited for the remote Jupyter server to start (default is 120).
 * `--template`: use the given custom file as a template for the job script.
 * `--log-dir`: path where job scripts and log files are saved on the remote cluster (default is `${HOME}/.jupyterdask`).
+* `--image`: run Python from the given image using Apptainer. Note that `--python` may still be used to modify the executable call inside the container (check the section ["Recommendations for Python environments"](#recommendations-for-python-environments) for more context).
 
 See all options with `jupyterdask --help`.
 

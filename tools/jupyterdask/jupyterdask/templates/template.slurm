@@ -12,9 +12,11 @@
 #SBATCH --account={{ account }}
 {% endif -%}
 {% if image %}
-APPTAINER_CMD="apptainer exec --bind /tmp,/scratch,/project,/run,/usr,/etc"
-APPTAINER_IMAGE="{{ image }}"
-PYTHON="${APPTAINER_CMD} ${APPTAINER_IMAGE} {{ python }}"
+# Bind all host paths
+_DIRS=`/usr/bin/ls -1 / | /usr/bin/awk '!/dev/' | /usr/bin/sed 's/^/\//g' `
+export APPTAINER_BIND=`echo ${_DIRS} | /usr/bin/sed 's/ /,/g' `
+# Use Python interpreter from the container image
+PYTHON="apptainer run {{ image }} {{ python }}"
 {% else %}
 PYTHON="{{ python }}"
 {% endif %}
